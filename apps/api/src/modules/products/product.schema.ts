@@ -17,6 +17,6 @@ export const createProductSchema = z.object({
 
 // Выводим TypeScript-тип на основе Zod-схемы.
 // Тип автоматически соответствует правилам схемы.
-export type CreateProductInput = z.infer<
+export type ProductInput = z.infer<
   typeof createProductSchema
 >;

@@ -1,13 +1,15 @@
 
-import type { CreateProductInput } from "./product.schema.js";
+import { id } from "../../shared/types.js";
+import type { ProductInput } from "./product.schema.js";
 
-// CONTRACT: описывает, что умеет хранилище товаров,
-// но не говорит, как оно реализовано.
-export type Product = CreateProductInput & {
-  id: string;
+export type Product = ProductInput & {
+  id: id;
 };
 
 export interface ProductRepository {
-  save(input: CreateProductInput): Product;
-  findAll(): Product[];
+  save(input: ProductInput): Promise<Product>;
+  findAll(): Promise<Product[]>;
+  findById(id:string):Promise<Product>;
+  updateById(id:string, input:ProductInput):Promise<Product>;
+  deleteById(id:string): Promise<id>;
 }
