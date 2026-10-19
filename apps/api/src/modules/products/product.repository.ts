@@ -6,6 +6,7 @@ import type {
 } from "./product.repository.interface.js";
 import { pool } from "../../db/pool.js";
 import { id } from "../../shared/types.js";
+import { ProductNotFoundError } from "../../shared/errors.js";
 
 type ProductRow = {
   id: string;
@@ -25,6 +26,10 @@ export const productRepository: ProductRepository = {
       [id, input.name, input.price, input.isAvailable])
 
       const row= result.rows[0]
+
+      if(!row) {
+        throw new ProductNotFoundError()
+      }
 
       return {
         id: row.id,
@@ -62,7 +67,7 @@ export const productRepository: ProductRepository = {
     const row= result.rows[0]
 
     if (!row) {
-      throw new Error("PRODUCT_NOT_FOUND");
+      throw new ProductNotFoundError()
     }
     
     return {
@@ -84,7 +89,7 @@ export const productRepository: ProductRepository = {
     const row = result.rows[0]
 
     if (!row) {
-      throw new Error("PRODUCT_NOT_FOUND");
+      throw new ProductNotFoundError()
     }
     
     return {
@@ -104,9 +109,9 @@ export const productRepository: ProductRepository = {
     const row = result.rows[0]
 
     if (!row) {
-      throw new Error("PRODUCT_NOT_FOUND");
+      throw new ProductNotFoundError()
     }
     
-    return id
+    return row.id
   }
 };

@@ -1,6 +1,7 @@
 
 import express from "express";
 import productRoutes from "./modules/products/products.routes.js"
+import { ErrorNames, getErrorStatus, ProductNotFoundError, ValidationError } from "./shared/errors.js";
 
 const app = express();
 const port = 3000;
@@ -13,9 +14,7 @@ app.use((req, res, next) => {
     console.log(`${req.method} ${req.url}`);
     next();
   });
-
-
-
+ 
 app.use("/api/products", productRoutes);
 
 app.get("/health", (_req, res) => {
@@ -47,16 +46,16 @@ app.use(
       res: express.Response,
       next: express.NextFunction,
     ) => {
-      console.error(err);
   
       if (res.headersSent) {
         return next(err);
       }
-  
-      res.status(500).json({
-        error: "INTERNAL_SERVER_ERROR",
-        message: "An unexpected error occurred",
-      });
+
+      const errorStatus = getErrorStatus(err.name as ErrorNames)
+      
+      res.status(errorStatus).json({
+        message: err.message
+      })
     },
 );
 
