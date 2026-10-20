@@ -1,12 +1,12 @@
-
 import { Pool } from "pg";
+import {env} from "../config/env.js"
 
-// Pool переиспользует подключения к PostgreSQL,
-// вместо создания нового соединения для каждого запроса.
+
 export const pool = new Pool({
-  host: "localhost",
-  port: 5432,
-  database: "pos_saas_db",
-  user: "nurmat",
-  max: 10,
+  host: env.DATABASE_HOST,
+  port: env.DATABASE_PORT,
+  database: env.DATABASE_NAME,
+  user: env.DATABASE_USER,
+  password: env.DATABASE_PASSWORD,
+  max: env.DATABASE_MAX_CONNECTIONS,
 });

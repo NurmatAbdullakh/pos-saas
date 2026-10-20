@@ -9,7 +9,7 @@ import { id } from "../../shared/types.js";
 import { ProductNotFoundError } from "../../shared/errors.js";
 
 type ProductRow = {
-  id: string;
+  id: id;
   name: string;
   price: number;
   is_available: boolean;

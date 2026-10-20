@@ -1,3 +1,5 @@
+import z from "zod";
+
 export enum errorStatuses {
     OK = 200,
     BadRequеst=400,
@@ -25,9 +27,11 @@ export class ProductNotFoundError extends Error{
     }
 }
 
+type ValidationDetails = z.ZodError["issues"];
 export class ValidationError extends Error{
-    constructor(){
+    constructor(public details: ValidationDetails){
         super("Validation failed")
         this.name="ValidationFailed"
+        this.details=details
     }
 }

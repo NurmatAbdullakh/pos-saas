@@ -1,19 +1,17 @@
 
 import type { Request, Response } from "express";
-import { ValidationError } from "../../shared/errors.js";
 import { productService } from "./product.container.js";
 import { createProductSchema } from "./product.schema.js";
 import { asyncRequestHandler } from "../../shared/asyncRequestHandler.js";
+import { idSchema } from "../../shared/schemas.js";
+import { parseOrThrow } from "../../shared/validate.js";
 
 export const createProduct = asyncRequestHandler( 
    async function  (req: Request,res: Response,): Promise<void> {
-    const validation = createProductSchema.safeParse(req.body);
-    
-    if (!validation.success) {
-      throw new ValidationError()
-    }
-  
-    const product = await productService.createProduct(validation.data);
+
+    const validatedData = parseOrThrow(req.body, createProductSchema)
+
+    const product = await productService.createProduct(validatedData);
 
     res.status(201).json({
       message: "Product data is valid",
@@ -32,7 +30,7 @@ export const  getAllProducts = asyncRequestHandler(
 
 export const getProductByID =asyncRequestHandler(
   async function (req:Request, res:Response){
-    const id= req.params.id as string
+    const id = parseOrThrow(req.params.id, idSchema)
     const result = await productService.findById(id)
 
     res.status(200).json({
@@ -42,14 +40,11 @@ export const getProductByID =asyncRequestHandler(
 
 export const updateProductById=asyncRequestHandler( 
   async function (req: Request, res: Response){
-    const validation = createProductSchema.safeParse(req.body);
 
-    if(!validation.success){
-      throw new ValidationError()
-    }
     
-    const id = req.params.id as string
-    const input = validation.data
+    const id = parseOrThrow(req.params.id, idSchema)
+    const input = parseOrThrow(req.body, createProductSchema)
+
     const result = await productService.updateById(id, input)
 
     res.status(200).json({
@@ -59,9 +54,9 @@ export const updateProductById=asyncRequestHandler(
 })
 
 export const  deleteProductById = asyncRequestHandler(
-  async function (req:Request, res:Response) {
-      const id = req.params.id as string
-
+  async function (req:Request, res:Response) {      
+      const id = parseOrThrow(req.params.id, idSchema)
+      
       await productService.deleteById(id)
 
       res.status(200).json({
