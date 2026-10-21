@@ -10,6 +10,7 @@ const envSchema = z.object({
   DATABASE_USER: z.string().min(1),
   DATABASE_PASSWORD: z.string().default(""),
   DATABASE_MAX_CONNECTIONS: z.coerce.number().int().positive().default(10),
+  DATABASE_URL:z.string().default("")
 });
 
 export const env = envSchema.parse(process.env);
