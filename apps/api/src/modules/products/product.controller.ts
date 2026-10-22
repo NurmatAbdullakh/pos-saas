@@ -4,7 +4,7 @@ import { productService } from "./product.container.js";
 import { createProductSchema } from "./product.schema.js";
 import { asyncRequestHandler } from "../../shared/asyncRequestHandler.js";
 import { idSchema } from "../../shared/schemas.js";
-import { parseOrThrow } from "../../shared/validate.js";
+import { parseOrThrow } from "../../shared/parseOrThrow.js";
 
 export const createProduct = asyncRequestHandler( 
    async function  (req: Request,res: Response,): Promise<void> {
