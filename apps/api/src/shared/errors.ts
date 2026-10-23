@@ -3,6 +3,7 @@ import z from "zod";
 export enum errorStatuses {
     OK = 200,
     BadRequеst=400,
+    Unauthorized=401,
     NotFound=404,
     Conflict=409,
     ServerError=500,
@@ -11,7 +12,8 @@ export enum errorStatuses {
 export enum ErrorNames {
     ValidationFailed="ValidationFailed",
     NotFoundError="NotFoundError",
-    ExistsError="ExistsError"
+    ExistsError="ExistsError",
+    Unauthorized="Unauthorized"
 }
 
 export const getErrorStatus=(ErrorName:ErrorNames):errorStatuses=>{
@@ -19,6 +21,7 @@ export const getErrorStatus=(ErrorName:ErrorNames):errorStatuses=>{
         case ErrorNames.NotFoundError :  return errorStatuses.NotFound
         case ErrorNames.ValidationFailed: return errorStatuses.BadRequеst
         case ErrorNames.ExistsError: return errorStatuses.Conflict
+        case ErrorNames.Unauthorized: return errorStatuses.Unauthorized
         default: return errorStatuses.ServerError
     }
 } 
@@ -42,5 +45,12 @@ export class ExistsError extends Error{
     constructor(message:string){
         super(message);
         this.name = ErrorNames.ExistsError
+    }
+}
+
+export class UnauthorizedError extends Error{
+    constructor(message:string){
+        super(message);
+        this.name = ErrorNames.Unauthorized
     }
 }

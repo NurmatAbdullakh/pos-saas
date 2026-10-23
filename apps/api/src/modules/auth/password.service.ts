@@ -8,9 +8,9 @@ export const passwordService = {
   },
 
   async verify(
-    passwordHash: string,
+    password_hash: string,
     password: string,
   ): Promise<boolean> {
-    return argon2.verify(passwordHash, password);
+    return argon2.verify(password_hash, password);
   },
 };
