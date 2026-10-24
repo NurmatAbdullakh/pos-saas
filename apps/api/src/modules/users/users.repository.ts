@@ -21,9 +21,14 @@ export const usersRepository: UserRepository = {
           throw error;
         }
       },
-      async findUserByEmail(email:string):Promise<User | null>{
-        
-        const result = await pool.query(`SELECT id, name, email, password_hash FROM users WHERE email=$1`,[email])        
+      
+      async findUserByProperty(property:keyof User, value:string):Promise<User | null>{
+
+        const result = await pool.query(`
+          SELECT id, name, email, created_at, password_hash 
+          FROM users 
+          WHERE ${property}=$1
+        `,[value])
         
         return result.rows[0] ?? null;
       }

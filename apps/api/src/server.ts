@@ -2,24 +2,14 @@
 import express from "express";
 import productRoutes from "./modules/products/products.routes.js"
 import authRoutes from "./modules/auth/auth.routes.js"
+import meRoutes from "./modules/auth/me.routes.js"
 import { erroHandlerMiddleware } from "./middlewares/errorHandler.middleware.js";
+import { authTokenMiddleware } from "./middlewares/authToken.middleware.js";
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
-
-
-// Logging Middleware
-app.use((req, _res, next) => {
-    console.log(`${req.method} ${req.url}`);
-    next();
-  });
- 
-// Routes
-app.use("/api/products", productRoutes);
-app.use("/api/auth", authRoutes);
-
 
 app.get("/health", (_req, res) => {
   res.status(200).json({
@@ -27,6 +17,23 @@ app.get("/health", (_req, res) => {
     service: "pos-api",
   });
 });
+
+
+// Logging Middleware
+app.use((req, _res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+  
+
+// Routes
+app.use("/api/auth", authRoutes);
+app.use(authTokenMiddleware)
+app.use("/api/me", meRoutes);
+app.use("/api/products", productRoutes);
+
+
+
 
 // error handler
 app.use(erroHandlerMiddleware);
