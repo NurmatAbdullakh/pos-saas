@@ -5,11 +5,14 @@ import authRoutes from "./modules/auth/auth.routes.js"
 import meRoutes from "./modules/auth/me.routes.js"
 import { erroHandlerMiddleware } from "./middlewares/errorHandler.middleware.js";
 import { authTokenMiddleware } from "./middlewares/authToken.middleware.js";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
+app.use(express.json());
+app.use(cookieParser());
 
 app.get("/health", (_req, res) => {
   res.status(200).json({
@@ -36,13 +39,14 @@ app.use("/api/products", productRoutes);
 
 
 // error handler
-app.use(erroHandlerMiddleware);
 app.use((req, res) => {
-    res.status(404).json({
-        error: "NOT_FOUND",
-        message: `Route ${req.method} ${req.originalUrl} not found`,
-    });
+  res.status(404).json({
+    error: "NOT_FOUND",
+    message: `Route ${req.method} ${req.originalUrl} not found`,
+  });
 });
+
+app.use(erroHandlerMiddleware);
 
 app.listen(port, () => {
   console.log(`POS API listening on http://localhost:${port}`);

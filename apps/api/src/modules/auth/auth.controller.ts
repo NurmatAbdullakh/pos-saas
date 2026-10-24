@@ -5,8 +5,10 @@ import { AuthService } from "./auth.container.js";
 import {Request, Response} from  "express"
 import { loginSchema } from "./auth.schema.js";
 import { idSchema } from "../../shared/schemas.js";
-import { NotFoundError } from "../../shared/errors.js";
+import { NotFoundError, UnauthorizedError } from "../../shared/errors.js";
 import { usersRepository } from "../users/users.repository.js";
+import { refreshSessionService } from "./refreshSession.service.js";
+import { env } from "node:process";
 
 export const register = asyncRequestHandler(
     async function (req:Request, res:Response){
@@ -18,16 +20,48 @@ export const register = asyncRequestHandler(
     }
 )
 
-export const login=asyncRequestHandler(
-    async function (req:Request, res:Response){     
-        
-        const body = parseOrThrow(req.body, loginSchema)
-                
-        const result = await AuthService.login(body)
+export const login = asyncRequestHandler(
+    async function (req: Request, res: Response) {
+      const body = parseOrThrow(req.body, loginSchema);
+      const result = await AuthService.login(body);
+  
+      res.cookie("refreshToken", result.refreshToken, {
+        httpOnly: true,
+        secure: env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/api/auth",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+  
+      const { refreshToken: _, ...response } = result;
+  
+      res.status(200).json(response);
+    },
+);
 
-        res.status(200).json(result)
-    }
-)
+export const refresh = asyncRequestHandler(
+    async function (req: Request, res: Response) {
+        const rawToken: unknown = req.cookies?.refreshToken;
+
+        if (typeof rawToken !== "string" || !rawToken) {
+        throw new UnauthorizedError("Refresh token is required");
+        }
+
+        const result = await refreshSessionService.refresh(rawToken);
+
+        res.cookie("refreshToken", result.refreshToken, {
+        httpOnly: true,
+        secure: env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/api/auth",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        res.status(200).json({
+        accessToken: result.accessToken,
+        });
+    },
+);
 
 export const me= asyncRequestHandler(
     async function (_:Request, res:Response) {
