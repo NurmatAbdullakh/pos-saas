@@ -51,7 +51,7 @@ export function createAuthService( repository: UserRepository ){
             await refreshTokenRepository.create({
               userId:foundUserByEmail.id,
               tokenHash: refreshTokenHash,
-              expiresAt: String(refreshTokenExpiresAt),
+              expiresAt: refreshTokenExpiresAt,
             });
           
             return {

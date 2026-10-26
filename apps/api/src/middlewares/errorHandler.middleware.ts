@@ -2,6 +2,7 @@ import {Response, Request, NextFunction } from "express";
 import { ErrorNames, getErrorStatus } from "../shared/errors.js";
 
 export function erroHandlerMiddleware(err: Error, _req: Request,res: Response,next: NextFunction){
+    console.error(err);
     if (res.headersSent) {
         return next(err);
     }

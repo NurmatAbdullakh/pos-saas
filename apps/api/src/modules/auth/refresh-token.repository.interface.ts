@@ -3,7 +3,7 @@ import { id } from "../../shared/types.js"
 export type RefreshTokenCreateInput = {
     userId: id,
     tokenHash: string,
-    expiresAt: string
+    expiresAt: Date
 }
 
 export interface RefreshToken {
