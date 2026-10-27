@@ -64,6 +64,6 @@ export function createAuthService( repository: UserRepository ){
               accessToken,
               refreshToken,
             };
-          }
+        },
     }
 }

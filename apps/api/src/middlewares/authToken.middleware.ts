@@ -20,7 +20,6 @@ export const  authTokenMiddleware = asyncRequestHandler(
         try {
             const payload = await tokenService.verify(token);
             res.locals.userId = payload.userId
-            // next()
         } catch {
             throw new UnauthorizedError("Invalid or expired token");
         }

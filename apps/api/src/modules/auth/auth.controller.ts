@@ -9,6 +9,8 @@ import { NotFoundError, UnauthorizedError } from "../../shared/errors.js";
 import { usersRepository } from "../users/users.repository.js";
 import { refreshSessionService } from "./refreshSession.service.js";
 import { env } from "node:process";
+import { refreshTokenRepository } from "./refresh-token.repository.js";
+import { refreshTokenService } from "./refresh-token.service.js";
 
 export const register = asyncRequestHandler(
     async function (req:Request, res:Response){
@@ -62,6 +64,29 @@ export const refresh = asyncRequestHandler(
         });
     },
 );
+
+export const logout = asyncRequestHandler(
+    async function (req:Request, res:Response){
+        const rawToken: unknown = req.cookies?.refreshToken;
+
+        if (typeof rawToken !== "string" || !rawToken) {
+            throw new UnauthorizedError("Refresh token is required");
+        }
+
+        const refreshTokenHash = refreshTokenService.hash(rawToken);
+
+        await refreshTokenRepository.revoke(refreshTokenHash)
+
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/api/auth",
+        });
+
+        res.status(200).json({message:"logged out"})
+    }
+)
 
 export const me= asyncRequestHandler(
     async function (_:Request, res:Response) {
