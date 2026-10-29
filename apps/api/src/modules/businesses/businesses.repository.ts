@@ -1,4 +1,5 @@
 import { pool } from "../../db/pool.js";
+import { MemberRoles } from "../../shared/constants.js";
 import { NotFoundError } from "../../shared/errors.js";
 import { businessesRepositoryType } from "./businesses.type.js";
 
@@ -23,7 +24,7 @@ export const businessesRepository: businessesRepositoryType = {
                 INSERT INTO business_memberships(business_id, user_id, role)
                 VALUES($1, $2, $3)
                 RETURNING business_id, user_id, role
-            `, [createBusinessRow.id,  input.created_by, "owner"])
+            `, [createBusinessRow.id,  input.created_by, MemberRoles.owner])
 
             const rowCreateBusinessMembership =  resultCreateBusinessMembership.rows[0]
 

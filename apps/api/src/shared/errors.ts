@@ -4,6 +4,7 @@ export enum errorStatuses {
     OK = 200,
     BadRequеst=400,
     Unauthorized=401,
+    NotAllowed=403,
     NotFound=404,
     Conflict=409,
     ServerError=500,
@@ -13,7 +14,8 @@ export enum ErrorNames {
     ValidationFailed="ValidationFailed",
     NotFoundError="NotFoundError",
     ExistsError="ExistsError",
-    Unauthorized="Unauthorized"
+    Unauthorized="Unauthorized",
+    NotAllowed="NotAllowed"
 }
 
 export const getErrorStatus=(ErrorName:ErrorNames):errorStatuses=>{
@@ -22,6 +24,7 @@ export const getErrorStatus=(ErrorName:ErrorNames):errorStatuses=>{
         case ErrorNames.ValidationFailed: return errorStatuses.BadRequеst
         case ErrorNames.ExistsError: return errorStatuses.Conflict
         case ErrorNames.Unauthorized: return errorStatuses.Unauthorized
+        case ErrorNames.NotAllowed: return errorStatuses.NotAllowed
         default: return errorStatuses.ServerError
     }
 } 
@@ -52,5 +55,12 @@ export class UnauthorizedError extends Error{
     constructor(message:string){
         super(message);
         this.name = ErrorNames.Unauthorized
+    }
+}
+
+export class NotAllowedError extends Error{
+    constructor(message:string){
+        super(message);
+        this.name = ErrorNames.NotAllowed
     }
 }
