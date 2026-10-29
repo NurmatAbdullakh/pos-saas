@@ -11,6 +11,7 @@ import { refreshSessionService } from "./refreshSession.service.js";
 import { env } from "node:process";
 import { refreshTokenRepository } from "./refresh-token.repository.js";
 import { refreshTokenService } from "./refresh-token.service.js";
+import { successResponse } from "../../shared/successResponse.js";
 
 export const register = asyncRequestHandler(
     async function (req:Request, res:Response){
@@ -18,7 +19,7 @@ export const register = asyncRequestHandler(
 
         const userCreateresult = await AuthService.create(body)
 
-       res.status(201).json({data:userCreateresult})
+       res.status(201).json(successResponse(userCreateresult, "register successfully"))
     }
 )
 
@@ -37,7 +38,7 @@ export const login = asyncRequestHandler(
   
       const { refreshToken: _, ...response } = result;
   
-      res.status(200).json(response);
+      res.status(200).json(successResponse(response, "login successfully"));
     },
 );
 
@@ -60,7 +61,7 @@ export const refresh = asyncRequestHandler(
         });
 
         res.status(200).json({
-        accessToken: result.accessToken,
+            accessToken: result.accessToken,
         });
     },
 );
@@ -84,7 +85,7 @@ export const logout = asyncRequestHandler(
             path: "/api/auth",
         });
 
-        res.status(200).json({message:"logged out"})
+        res.status(200).json(successResponse({},"logged out"))
     }
 )
 
@@ -94,13 +95,13 @@ export const me= asyncRequestHandler(
 
         const result = await usersRepository.findUserByProperty('id', userId)        
         
-        if(!result) throw new NotFoundError("user not found ") 
+        if(!result) throw new NotFoundError("user not found") 
         
-        res.status(200).json({
+        res.status(200).json(successResponse({
             id:result.id,
             name:result.name,
             email: result.email,
             created_at: result.created_at
-        })
+        }, "user data reached successfully"))
     }
 )

@@ -10,6 +10,10 @@ export function erroHandlerMiddleware(err: Error, _req: Request,res: Response,ne
     const errorStatus = getErrorStatus(err.name as ErrorNames)
 
     res.status(errorStatus).json({
-        message: err.message
+        success: false,
+        message: err.message,
+        error: {
+            code: err.name
+        }
     })
 }

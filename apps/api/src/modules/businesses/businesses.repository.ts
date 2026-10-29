@@ -41,18 +41,14 @@ export const businessesRepository: businessesRepositoryType = {
     },
     async getAll(created_by){
         const result = await pool.query(`
-            SELECT * FROM businesses WHERE created_by=$1 ORDER BY created_at DESC
+            SELECT id, name, created_by FROM businesses WHERE created_by=$1 ORDER BY created_at DESC
         `,[created_by])
 
-        const row = result.rows
-
-        if(!row) throw new NotFoundError("businesses not found")
-
-        return row
+        return result.rows
     },
-    async deleteById(id){
+    async deleteById(id, user_id){
         const result= await pool.query(
-            `DELETE FROM businesses WHERE id=$1 RETURNING id;`, [id]
+            `DELETE FROM businesses WHERE id=$1 AND created_by=$2 RETURNING id;`, [id, user_id]
         )
 
         const row = result.rows[0]
@@ -61,11 +57,11 @@ export const businessesRepository: businessesRepositoryType = {
             throw new NotFoundError("business not found")
         }
 
-        return row.id
+        return row
     },
-    async  getById(id) {        
+    async  getById(id,user_id) {        
         const result= await pool.query(
-            `SELECT id, name, created_by FROM businesses WHERE id=$1;`, [id]
+            `SELECT id, name, created_by FROM businesses WHERE id=$1 AND created_by=$2;`, [id, user_id]
         )
 
         const row = result.rows[0]
@@ -76,13 +72,13 @@ export const businessesRepository: businessesRepositoryType = {
 
         return row  
     },
-    async  updateById(input) {
+    async  updateById(input,user_id) {
         const result= await pool.query(`
             UPDATE businesses 
             SET  name = $1
-            WHERE id = $2
+            WHERE id = $2 AND created_by=$3
             RETURNING id, name;
-        `, [input.name, input.id])
+        `, [input.name, input.id, user_id])
 
         const row = result.rows[0]
 
