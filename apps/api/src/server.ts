@@ -1,11 +1,14 @@
 
 import express from "express";
+import cookieParser from "cookie-parser";
+// routes
 import productRoutes from "./modules/products/products.routes.js"
 import authRoutes from "./modules/auth/auth.routes.js"
 import meRoutes from "./modules/auth/me.routes.js"
+import besinessesRoutes from "./modules/businesses/businesses.routes.js"
+// middlewares
 import { erroHandlerMiddleware } from "./middlewares/errorHandler.middleware.js";
 import { authTokenMiddleware } from "./middlewares/authToken.middleware.js";
-import cookieParser from "cookie-parser";
 
 const app = express();
 const port = 3000;
@@ -34,6 +37,7 @@ app.use("/api/auth", authRoutes);
 app.use(authTokenMiddleware)
 app.use("/api/me", meRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/businesses", besinessesRoutes);
 
 
 
