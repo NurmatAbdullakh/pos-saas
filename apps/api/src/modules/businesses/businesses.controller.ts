@@ -13,7 +13,7 @@ export const createBusiness=asyncRequestHandler(
 
         const result = await businessesService.create({...body, created_by:userId})
 
-        successResponse(result, "Business successfully created")
+         res.status(201).json(successResponse(result, "Business successfully created"))
     }
 )
 
@@ -23,7 +23,7 @@ export const getAllBusiness=asyncRequestHandler(
 
         const result = await businessesService.getAll(userId)
 
-        successResponse(result, "Business successfully get all")
+         res.status(201).json(successResponse(result, "Business successfully get all"))
     }
 )
 
@@ -34,7 +34,7 @@ export const getBusinessById=asyncRequestHandler(
         
         const result = await businessesService.getById(id,userId)
 
-        successResponse(result, "Business successfully got by id")
+         res.status(201).json(successResponse(result, "Business successfully got by id"))
     }
 )
 
