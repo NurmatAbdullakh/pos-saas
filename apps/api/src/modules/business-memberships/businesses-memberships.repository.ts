@@ -31,10 +31,7 @@ export const businessMembershipsRepository: businessMembershipsRepositoryType = 
 
         const row = result.rows[0]
 
-        if(!row) throw new NotFoundError("business_membership not found")
-
         return Boolean(row)
-
     },
 
 }

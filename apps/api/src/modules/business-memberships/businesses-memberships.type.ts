@@ -9,5 +9,5 @@ export type businessMembershipsRepositoryType={
     getAll():Promise<{name:string, id:string}[]>
     
     checkRoleAccess(business_id:id, user_id:id,role: MemberRoles.owner):
-        Promise<Boolean>
+        Promise<boolean>
 }

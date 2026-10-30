@@ -19,12 +19,12 @@ export type storesRepository = {
     getById(id: id, business_id: id): Promise<Store>;
 
     deleteById(
-    id: id,
-    business_id: id
+        id: id,
+        business_id: id
     ): Promise<Pick<Store, "id">>;
     
     updateById(
         input: CreateStoreInput & { id: id },
-        created_by: id
+        business_id: id
     ): Promise<Store>;
 }
