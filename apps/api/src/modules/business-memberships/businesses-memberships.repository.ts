@@ -1,5 +1,5 @@
 import { pool } from "../../db/pool.js";
-import { BadRequеstError, NotFoundError } from "../../shared/errors.js";
+import { NotFoundError } from "../../shared/errors.js";
 import { businessMembershipsRepositoryType } from "./businesses-memberships.type.js";
 
 export const businessMembershipsRepository: businessMembershipsRepositoryType = {
@@ -76,22 +76,21 @@ export const businessMembershipsRepository: businessMembershipsRepositoryType = 
             RETURNING id
         `, [businessId, memberId])
 
-        const row = result.rows[0].id
+        const row = result.rows[0]
 
         if(!row) throw new NotFoundError("member not found")
 
         return row
     },
-    async checkRoleAccess(business_id, user_id, role) {
+
+    async getUserRole (businessId, userId){
         const result = await pool.query(`
-            SELECT user_id 
+            SELECT role 
             FROM business_memberships
-            WHERE business_id = $1 AND role = $2 AND user_id=$3
-        `, [business_id, role, user_id])
+            WHERE business_id = $1 AND user_id=$2
+        `, [businessId, userId])
 
-        const row = result.rows[0]
-
-        return Boolean(row)
-    },
+        return result.rows[0]?.role ?? null;
+    }
 
 }

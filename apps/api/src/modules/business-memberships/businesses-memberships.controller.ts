@@ -10,7 +10,6 @@ import { MemberRoles } from "../../shared/constants.js";
 export const createBusinessMembership=asyncRequestHandler(
     async function (req:Request, res:Response){
         const businessId = parseOrThrow(req.params.business_id, idSchema)
-        const userId = parseOrThrow(res.locals.userId, idSchema)
         const body = parseOrThrow(req.body, businessMembershipCreateBodySchema)
 
         const result = await businessMembershipsService.create(
@@ -21,7 +20,6 @@ export const createBusinessMembership=asyncRequestHandler(
                 email: body.email
             },
             businessId,
-            userId
         )
 
         res.status(200).json(result)
@@ -31,9 +29,8 @@ export const createBusinessMembership=asyncRequestHandler(
 export const getAllBusinessMembership=asyncRequestHandler(
     async function (req:Request, res:Response){
         const businessId = parseOrThrow(req.params.business_id, idSchema)
-        const userId = parseOrThrow(res.locals.userId, idSchema)
 
-        const result = await businessMembershipsService.getAll(businessId, userId)
+        const result = await businessMembershipsService.getAll(businessId)
 
         res.status(200).json(result)
     }
@@ -43,9 +40,8 @@ export const getBusinessMembershipById=asyncRequestHandler(
     async function (req:Request, res:Response){
         const businessId = parseOrThrow(req.params.business_id, idSchema)
         const memberId = parseOrThrow(req.params.member_id, idSchema)
-        const userId = parseOrThrow(res.locals.userId, idSchema)
 
-        const result = await businessMembershipsService.getById(businessId, memberId, userId)
+        const result = await businessMembershipsService.getById(businessId, memberId)
 
         res.status(200).json(result)
     }
@@ -55,9 +51,8 @@ export const deleteBusinessMembershipById=asyncRequestHandler(
     async function (req:Request, res:Response){
         const businessId = parseOrThrow(req.params.business_id, idSchema)
         const memberId = parseOrThrow(req.params.member_id, idSchema)
-        const userId = parseOrThrow(res.locals.userId, idSchema)
 
-        const result = await businessMembershipsService.deleteById(businessId, memberId, userId)
+        const result = await businessMembershipsService.deleteById(businessId, memberId)
 
         res.status(200).json(result)
     }
@@ -68,7 +63,6 @@ export const updateBusinessMembershipById = asyncRequestHandler(
     async function (req:Request, res:Response){
         const businessId = parseOrThrow(req.params.business_id, idSchema)
         const memberId = parseOrThrow(req.params.member_id, idSchema)
-        const userId = parseOrThrow(res.locals.userId, idSchema)
         const body = parseOrThrow(
             req.body,
             z.object({
@@ -76,8 +70,7 @@ export const updateBusinessMembershipById = asyncRequestHandler(
             })
         )
 
-
-        const result = await businessMembershipsService.updateById(body.role, businessId, memberId, userId)
+        const result = await businessMembershipsService.updateById(body.role, businessId, memberId)
 
         res.status(200).json(result)
     }

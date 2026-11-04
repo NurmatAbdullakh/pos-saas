@@ -27,6 +27,5 @@ export type businessMembershipsRepositoryType={
 
     deleteById(businessId:id, member_id:id):Promise<{id:string}>
 
-    checkRoleAccess(business_id:id, user_id:id,role: MemberRoles):
-        Promise<boolean>
+    getUserRole (businessId:id, userId:id):Promise<MemberRoles>
 }

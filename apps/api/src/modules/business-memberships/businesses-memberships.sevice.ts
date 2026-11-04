@@ -4,17 +4,12 @@ import { AuthService } from "../auth/auth.container.js"
 import { passwordService } from "../auth/password.service.js"
 import { businessMembershipsRepository } from "./businesses-memberships.repository.js"
 import { CreateBusinessMembershipInput } from "./businesses-memberships.schema.js"
-import { MemberUpdateInput } from "./businesses-memberships.type.js"
-import { requireOwner } from "./businesses-memberships.utils.js"
 
 export const businessMembershipsService = {
     async create(
         input:CreateBusinessMembershipInput, 
         businessId:id, 
-        userId:id
     ){
-        await requireOwner(businessId, userId)
-        
         const passwordHash = await passwordService.hash(input.password)
 
         const userData = await AuthService.create({
@@ -30,10 +25,7 @@ export const businessMembershipsService = {
         role: MemberRoles, 
         businessId: id,
         memberId: id,
-        userId:id
     ){
-        await requireOwner(businessId, userId)
-        
         return await businessMembershipsRepository.updateById(
             businessId, 
             memberId,
@@ -42,24 +34,16 @@ export const businessMembershipsService = {
 
     },
 
-    async getAll(businessId:id, userId : id){
-        await requireOwner(businessId, userId)
-
+    async getAll(businessId:id){
         return await  businessMembershipsRepository.getAll(businessId)
     },
-    async getById(businessId:id, memberId:id, userId:string){
-        await requireOwner(businessId, userId)
-
+    async getById(businessId:id, memberId:id){
         return await businessMembershipsRepository.getById(businessId, memberId)
     },
-    async deleteById(businessId:id, memberId:id, userId:string){
-        await requireOwner(businessId, userId)
-
+    async deleteById(businessId:id, memberId:id){
         return await businessMembershipsRepository.deleteById(businessId, memberId)
     },
-    async checkRoleAccess(businessId:id, user_id:id, role: MemberRoles, userId:string ){
-        await requireOwner(businessId, userId)
-
-        return await  businessMembershipsRepository.checkRoleAccess(businessId, user_id, role)
+    async getUserRole(businessId:id, userId:id ){
+        return await  businessMembershipsRepository.getUserRole(businessId, userId)
     }
 }
