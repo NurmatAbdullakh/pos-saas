@@ -29,7 +29,7 @@ export const getAllBusiness=asyncRequestHandler(
 
 export const getBusinessById=asyncRequestHandler(
     async function (req:Request, res:Response){
-        const id=parseOrThrow(req.params.id, idSchema)
+        const id=parseOrThrow(req.params.business_id, idSchema)
         const userId = res.locals.userId
         
         const result = await businessesService.getById(id,userId)
@@ -40,7 +40,7 @@ export const getBusinessById=asyncRequestHandler(
 
 export const deleteBusinessById=asyncRequestHandler(
     async function (req:Request, res:Response){
-        const id=parseOrThrow(req.params.id, idSchema)
+        const id=parseOrThrow(req.params.business_id, idSchema)
         const userId = res.locals.userId
         
         const result = await businessesService.deleteById(id,userId)
@@ -52,7 +52,7 @@ export const deleteBusinessById=asyncRequestHandler(
 export const updateBusinessById=asyncRequestHandler(
     async function (req:Request, res:Response){
         const body=parseOrThrow(req.body, createBusinessSchema)
-        const id=parseOrThrow(req.params.id, idSchema)
+        const id=parseOrThrow(req.params.business_id, idSchema)
         const userId = res.locals.userId
         
         const result = await businessesService.updateById({name:body.name, id},userId)

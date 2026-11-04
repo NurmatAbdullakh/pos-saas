@@ -17,7 +17,7 @@ export const businessMembershipsRepository: businessMembershipsRepositoryType = 
         return row
     },
 
-    async updateById(businessId, memberId, role){
+    async updateRoleById(businessId, memberId, role){
         const userMemberRoleResult = await pool.query(`
             UPDATE business_memberships
             SET role = $1
@@ -40,7 +40,6 @@ export const businessMembershipsRepository: businessMembershipsRepositoryType = 
                 u.name,
                 u.email,
                 bm.role,
-                bm.business_id
             FROM business_memberships bm
             JOIN users u ON u.id = bm.user_id
             WHERE bm.business_id = $1 

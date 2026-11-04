@@ -8,24 +8,17 @@ export interface MemberSummary  {
     role: MemberRoles
 }
 
-export interface MemberUpdateInput{
-    name:string, 
-    email:string, 
-    password_hash:string,
-    role: string
-}
-
 export type businessMembershipsRepositoryType={
     create(businessId:id, userId:id, role:MemberRoles):
-        Promise<MemberSummary>
+        Promise<{id: id}>
 
     getAll(businessId:id):Promise<Array<MemberSummary>>
     
     getById(businessId:id, member_id:id):Promise<MemberSummary>
 
-    updateById(businessId: id, memberId:id, role:MemberRoles):Promise<MemberSummary>
+    updateRoleById(businessId: id, memberId:id, role:MemberRoles):Promise<{id: id}>
 
-    deleteById(businessId:id, member_id:id):Promise<{id:string}>
+    deleteById(businessId:id, member_id:id):Promise<{id: id}>
 
-    getUserRole (businessId:id, userId:id):Promise<MemberRoles>
+    getUserRole (businessId:id, userId:id):Promise<MemberRoles | null>
 }

@@ -1,7 +1,6 @@
 import { MemberRoles } from "../../shared/constants.js"
 import { id } from "../../shared/types.js"
 import { AuthService } from "../auth/auth.container.js"
-import { passwordService } from "../auth/password.service.js"
 import { businessMembershipsRepository } from "./businesses-memberships.repository.js"
 import { CreateBusinessMembershipInput } from "./businesses-memberships.schema.js"
 
@@ -10,28 +9,21 @@ export const businessMembershipsService = {
         input:CreateBusinessMembershipInput, 
         businessId:id, 
     ){
-        const passwordHash = await passwordService.hash(input.password)
-
-        const userData = await AuthService.create({
-            name: input.name,
-            email: input.email,
-            password:passwordHash
-        })
+        const userData = await AuthService.create(input)
 
         return await businessMembershipsRepository.create(businessId, userData.id, input.role )
     },
     
-    async updateById (
+    async updateRoleById (
         role: MemberRoles, 
         businessId: id,
         memberId: id,
     ){
-        return await businessMembershipsRepository.updateById(
+        return await businessMembershipsRepository.updateRoleById(
             businessId, 
             memberId,
             role
         )
-
     },
 
     async getAll(businessId:id){

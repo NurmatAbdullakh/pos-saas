@@ -22,7 +22,7 @@ export const createBusinessMembership=asyncRequestHandler(
             businessId,
         )
 
-        res.status(200).json(result)
+        res.status(201).json(result)
     }
 )
 
@@ -70,7 +70,7 @@ export const updateBusinessMembershipById = asyncRequestHandler(
             })
         )
 
-        const result = await businessMembershipsService.updateById(body.role, businessId, memberId)
+        const result = await businessMembershipsService.updateRoleById(body.role, businessId, memberId)
 
         res.status(200).json(result)
     }
