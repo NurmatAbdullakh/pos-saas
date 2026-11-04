@@ -13,7 +13,7 @@ export function createAuthService( repository: UserRepository ){
             const isUserExistsByEmail = await repository.findUserByProperty("email",input.email)
 
             if(isUserExistsByEmail){
-                throw new ExistsError("user exists with this email");
+                throw new ExistsError(`user exists with this email ${input.email}`);
             }
 
             const password_hash = await passwordService.hash(input.password)

@@ -15,3 +15,16 @@ export async function requireOwner(business_id: id, userId: id) {
         throw new NotAllowedError("not allowed");
     }
 }
+
+export async function requireManager(business_id: id, userId: id) {
+    const hasAccess =
+        await businessMembershipsService.checkRoleAccess(
+            business_id,
+            userId,
+            MemberRoles.manager
+        );
+
+    if (!hasAccess) {
+        throw new NotAllowedError("not allowed");
+    }
+}

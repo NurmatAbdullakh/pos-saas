@@ -15,12 +15,14 @@ export enum ErrorNames {
     NotFoundError="NotFoundError",
     ExistsError="ExistsError",
     Unauthorized="Unauthorized",
-    NotAllowed="NotAllowed"
+    NotAllowed="NotAllowed",
+    BadRequеst="BadRequеst"
 }
 
 export const getErrorStatus=(ErrorName:ErrorNames):errorStatuses=>{
     switch(ErrorName){
         case ErrorNames.NotFoundError :  return errorStatuses.NotFound
+        case ErrorNames.BadRequеst:
         case ErrorNames.ValidationFailed: return errorStatuses.BadRequеst
         case ErrorNames.ExistsError: return errorStatuses.Conflict
         case ErrorNames.Unauthorized: return errorStatuses.Unauthorized
@@ -62,5 +64,12 @@ export class NotAllowedError extends Error{
     constructor(message:string){
         super(message);
         this.name = ErrorNames.NotAllowed
+    }
+}
+
+export class BadRequеstError extends Error{
+    constructor(message:string){
+        super(message);
+        this.name = ErrorNames.BadRequеst
     }
 }
