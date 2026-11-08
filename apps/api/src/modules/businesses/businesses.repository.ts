@@ -65,7 +65,7 @@ export const businessesRepository: businessesRepositoryType = {
 
         return row
     },
-    async  getById(id,user_id) {        
+    async  getById(id, user_id) {        
         const result= await pool.query(`
             SELECT b.id, b.name, b.created_by
             FROM businesses b

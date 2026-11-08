@@ -21,7 +21,7 @@ export type businessesRepositoryType = {
 
   getAll(created_by: id): Promise<Business[]>;
 
-  getById(id: id, created_by: id): Promise<Business>;
+  getById(id: id, user_id: id): Promise<Business>;
 
   deleteById(
     id: id,
