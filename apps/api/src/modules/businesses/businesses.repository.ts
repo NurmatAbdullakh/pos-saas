@@ -42,7 +42,12 @@ export const businessesRepository: businessesRepositoryType = {
     },
     async getAll(created_by){
         const result = await pool.query(`
-            SELECT id, name, created_by FROM businesses WHERE created_by=$1 ORDER BY created_at DESC
+            SELECT b.id, b.name, b.created_by
+            FROM businesses b
+            JOIN business_memberships bm
+                ON bm.business_id = b.id
+            WHERE bm.user_id = $1
+            ORDER BY b.created_at DESC
         `,[created_by])
 
         return result.rows
@@ -61,9 +66,14 @@ export const businessesRepository: businessesRepositoryType = {
         return row
     },
     async  getById(id,user_id) {        
-        const result= await pool.query(
-            `SELECT id, name, created_by FROM businesses WHERE id=$1 AND created_by=$2;`, [id, user_id]
-        )
+        const result= await pool.query(`
+            SELECT b.id, b.name, b.created_by
+            FROM businesses b
+            JOIN business_memberships bm
+                ON bm.business_id = b.id
+            WHERE b.id = $1
+            AND bm.user_id = $2;
+        `, [id, user_id])
 
         const row = result.rows[0]
 

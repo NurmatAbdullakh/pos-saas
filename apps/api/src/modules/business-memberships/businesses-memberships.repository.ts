@@ -39,7 +39,7 @@ export const businessMembershipsRepository: businessMembershipsRepositoryType = 
                 u.id AS user_id,
                 u.name,
                 u.email,
-                bm.role,
+                bm.role
             FROM business_memberships bm
             JOIN users u ON u.id = bm.user_id
             WHERE bm.business_id = $1 
