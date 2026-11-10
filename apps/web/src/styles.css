@@ -181,3 +181,47 @@ h1 {
   .profile-card, .session-card { padding: 17px; }
   .session-card { align-items: flex-start; flex-direction: column; }
 }
+
+
+.social-buttons { display: flex; flex-direction: column; gap: 12px; }
+.facebook-login-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #1877f2;
+  border-radius: 6px;
+  background: #1877f2;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, opacity .15s ease;
+}
+.facebook-login-button:hover { background: #166fe5; }
+.facebook-login-button:disabled { opacity: .6; cursor: wait; }
+.facebook-mark {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  color: #1877f2;
+  font: 800 17px Arial, sans-serif;
+}
+.provider-icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid #e6e9ef;
+  border-radius: 50%;
+  font-weight: 700;
+}
+.provider-google { color: #4285f4; }
+.provider-facebook { color: #1877f2; }
+.provider-password { color: #64748b; }
