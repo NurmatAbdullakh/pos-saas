@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Building2, MoreHorizontal, Pencil, Plus, Store, Trash2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useBusinesses, useBusinessMutations } from "../hooks/useBusinesses";
 import { useWorkspaceStore } from "../../workspace/store/workspace.store";
 import { PageHeader } from "../../../shared/components/PageHeader";
@@ -16,6 +17,7 @@ interface BusinessesPageProps {
 }
 
 export function BusinessesPage({ accessToken, userId }: BusinessesPageProps) {
+  const navigate = useNavigate();
   const { data: businesses = [], isLoading, error } = useBusinesses(accessToken);
   const mutations = useBusinessMutations(accessToken);
   const setSelectedBusinessId = useWorkspaceStore((state) => state.setSelectedBusinessId);
@@ -27,16 +29,23 @@ export function BusinessesPage({ accessToken, userId }: BusinessesPageProps) {
   const filtered = businesses.filter((business) => business.name.toLowerCase().includes(search.toLowerCase()));
   const isPending = mutations.create.isPending || mutations.update.isPending;
 
+  function openBusiness(businessId: string) {
+    setSelectedBusinessId(businessId);
+    navigate(`/businesses/${businessId}`);
+  }
+
   async function save(values: { name: string }) {
     try {
       if (editing) {
         await mutations.update.mutateAsync({ id: editing.id, input: values });
+        setFormOpen(false);
+        setEditing(null);
       } else {
         const created = await mutations.create.mutateAsync(values);
-        setSelectedBusinessId(created.id);
+        setFormOpen(false);
+        setEditing(null);
+        openBusiness(created.id);
       }
-      setFormOpen(false);
-      setEditing(null);
     } catch {
       // The mutation error is rendered inside the open dialog.
     }
@@ -59,7 +68,7 @@ export function BusinessesPage({ accessToken, userId }: BusinessesPageProps) {
         eyebrow="Workspace settings"
         title="Businesses"
         description="Manage the businesses connected to your POS workspace."
-        action={<Button onClick={() => { setEditing(null); setFormOpen(true); }}><Plus className="size-4" /> Add business</Button>}
+        action={<Button onClick={() => { setEditing(null); mutations.create.reset(); setFormOpen(true); }}><Plus className="size-4" /> Add business</Button>}
       />
 
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -97,8 +106,8 @@ export function BusinessesPage({ accessToken, userId }: BusinessesPageProps) {
                 <h2 className="mt-5 truncate font-display text-lg font-bold text-slate-950">{business.name}</h2>
                 <p className="mt-1 text-xs text-slate-500">Business workspace</p>
                 <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
-                  <span className="flex items-center gap-2 text-xs text-slate-500"><Store className="size-3.5" /> Manage locations</span>
-                  <Button variant="subtle" size="sm" onClick={() => setSelectedBusinessId(business.id)}>Open workspace</Button>
+                  <span className="flex items-center gap-2 text-xs text-slate-500"><Store className="size-3.5" /> Stores & team</span>
+                  <Button variant="subtle" size="sm" onClick={() => openBusiness(business.id)}>Open business <span aria-hidden="true">→</span></Button>
                 </div>
               </article>
             );
