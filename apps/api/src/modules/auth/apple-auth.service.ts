@@ -11,7 +11,7 @@ export const appleAuthService = {
   async login(input: {
     code: string;
     nonce: string;
-    redirectUri: string;
+    
     firstName?: string;
     lastName?: string;
   }) {
