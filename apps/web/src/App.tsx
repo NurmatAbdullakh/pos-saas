@@ -144,9 +144,7 @@ export default function App() {
       script.defer = true;
       document.body.appendChild(script);
     } else if (window.FB) initializeFacebook();
-    else script.addEventListener("load", initializeFacebook);
     return () => {
-      script?.removeEventListener("load", initializeFacebook);
       if (window.fbAsyncInit === initializeFacebook) delete window.fbAsyncInit;
     };
   }, []);
