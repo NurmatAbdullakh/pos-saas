@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LoginPage } from "./features/auth/components/LoginPage";
+import { DashboardPage } from "./features/dashboard/components/DashboardPage";
+import type { LoginCredentials } from "./features/auth/types/auth.types";
 
 type AuthProvider = "google" | "facebook" | "apple" | "password";
 interface User { id: string; name: string; email: string; created_at: string; authProvider: AuthProvider }
@@ -234,6 +237,28 @@ export default function App() {
     };
   }, []);
 
+  const loginWithPassword = async ({ email, password }: LoginCredentials) => {
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) throw new Error(await readError(response));
+      const result = (await response.json()) as ApiEnvelope<AuthResponse>;
+      setAccessToken(result.data.accessToken);
+      setUser(result.data.user);
+      setStatus("signed-in");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to sign in.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const loginWithFacebook = () => {
     if (!window.FB || busy) return;
     setError("");
@@ -321,87 +346,41 @@ export default function App() {
   }
 
   if (status === "signed-in" && user) {
-    const providerLabel = user.authProvider === "google" ? "Google"
-      : user.authProvider === "facebook" ? "Facebook"
-      : user.authProvider === "apple" ? "Apple" : "Email / Password";
-    const providerMark = user.authProvider === "google" ? "G"
-      : user.authProvider === "facebook" ? "f"
-      : user.authProvider === "apple" ? "A" : "@";
-    return (
-      <main className="dashboard-screen">
-        <header className="topbar">
-          <a className="brand" href="/"><span className="brand-mark">P</span> POS SaaS</a>
-          <button className="logout-button" onClick={() => void logout()} disabled={busy}>
-            {busy ? "Signing out…" : "Log out"}
-          </button>
-        </header>
-        <section className="dashboard-content">
-          <div className="eyebrow">WORKSPACE OVERVIEW</div>
-          <h1>Welcome back, {user.name.split(" ")[0]}.</h1>
-          <p className="subtitle">You’re signed in. Your workspace is ready.</p>
-          <article className="profile-card">
-            <div className="avatar">{user.name.charAt(0).toUpperCase()}</div>
-            <div className="profile-main">
-              <span className="profile-label">SIGNED-IN ACCOUNT</span>
-              <h2>{user.name}</h2><p>{user.email}</p>
-            </div>
-            <span className="status-dot" aria-label="Active session" />
-          </article>
-          <article className="session-card">
-            <div>
-              <span className="profile-label">AUTHENTICATION METHOD</span>
-              <div className="provider-line">
-                <span className={`provider-icon provider-${user.authProvider}`}>{providerMark}</span>
-                <strong>Logged in via: {providerLabel}</strong>
-              </div>
-            </div>
-            <span className="session-badge">Active session</span>
-          </article>
-        </section>
-        <footer className="footer">POS SaaS <span>·</span> Secure workspace</footer>
-      </main>
-    );
+    return <DashboardPage user={user} isLoading={busy} onLogout={() => void logout()} />;
   }
 
-  return (
-    <main className="screen">
-      <section className="login-card">
-        <a className="brand login-brand" href="/"><span className="brand-mark">P</span> POS SaaS</a>
-        <div className="login-icon"><span>↗</span></div>
-        <div className="eyebrow">YOUR BUSINESS, IN CONTROL</div>
-        <h1>Welcome back</h1>
-        <p className="subtitle">Sign in to continue to your POS workspace.</p>
-        <div className="social-buttons">
-          {GOOGLE_CLIENT_ID && (
-            <div className="google-button-wrap">
-              {/* Google Identity Services owns the contents of this mount node.
-                  Keep React-rendered placeholder content outside that node. */}
-              <div ref={googleButtonRef} />
-              {!googleReady && <div className="google-placeholder">Loading Google sign-in…</div>}
-            </div>
-          )}
-          {FACEBOOK_APP_ID && (
-            <button className="facebook-login-button" onClick={loginWithFacebook} disabled={!facebookReady || busy}>
-              <span className="facebook-mark">f</span>
-              {facebookReady ? "Continue with Facebook" : "Loading Facebook…"}
-            </button>
-          )}
-          {APPLE_CLIENT_ID && APPLE_REDIRECT_URI && (
-            <button className="apple-login-button" onClick={() => void loginWithApple()} disabled={!appleReady || busy}>
-              <span className="apple-mark" aria-hidden="true">●</span>
-              {appleReady ? "Continue with Apple" : "Loading Apple…"}
-            </button>
-          )}
-          {!GOOGLE_CLIENT_ID && !FACEBOOK_APP_ID && !(APPLE_CLIENT_ID && APPLE_REDIRECT_URI) && (
-            <div className="google-placeholder">Configure a sign-in provider in apps/web/.env</div>
-          )}
+  const socialContent = (
+    <>
+      {GOOGLE_CLIENT_ID && (
+        <div className="google-button-wrap">
+          <div ref={googleButtonRef} />
+          {!googleReady && <div className="google-placeholder">Loading Google sign-in…</div>}
         </div>
-        {busy && <p className="helper-text">Verifying your account…</p>}
-        {error && <div className="error-message" role="alert">{error}</div>}
-        <div className="divider"><span>SECURE SIGN-IN</span></div>
-        <p className="privacy-note">Your account is protected. We never store your social account password.</p>
-      </section>
-      <footer className="footer">POS SaaS <span>·</span> Simple. Secure. Connected.</footer>
-    </main>
+      )}
+      {FACEBOOK_APP_ID && (
+        <button className="facebook-login-button" onClick={loginWithFacebook} disabled={!facebookReady || busy}>
+          <span className="facebook-mark">f</span>
+          {facebookReady ? "Continue with Facebook" : "Loading Facebook…"}
+        </button>
+      )}
+      {APPLE_CLIENT_ID && APPLE_REDIRECT_URI && (
+        <button className="apple-login-button" onClick={() => void loginWithApple()} disabled={!appleReady || busy}>
+          <span className="apple-mark" aria-hidden="true">●</span>
+          {appleReady ? "Continue with Apple" : "Loading Apple…"}
+        </button>
+      )}
+      {!GOOGLE_CLIENT_ID && !FACEBOOK_APP_ID && !(APPLE_CLIENT_ID && APPLE_REDIRECT_URI) && (
+        <div className="google-placeholder">No social sign-in providers configured.</div>
+      )}
+    </>
+  );
+
+  return (
+    <LoginPage
+      isLoading={busy}
+      error={error}
+      onSubmit={loginWithPassword}
+      socialContent={socialContent}
+    />
   );
 }
