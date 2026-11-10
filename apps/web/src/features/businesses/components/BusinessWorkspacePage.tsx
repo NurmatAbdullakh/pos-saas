@@ -2,20 +2,25 @@ import { useEffect } from "react";
 import { Building2, Store, Users } from "lucide-react";
 import { NavLink, Outlet, useParams } from "react-router-dom";
 import { useBusinesses } from "../hooks/useBusinesses";
+import { useMemberships } from "../../memberships/hooks/useMemberships";
 import { useWorkspaceStore } from "../../workspace/store/workspace.store";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { EmptyState } from "../../../shared/components/EmptyState";
 
 interface BusinessWorkspacePageProps {
   accessToken: string;
+  currentUserId: string;
 }
 
-export function BusinessWorkspacePage({ accessToken }: BusinessWorkspacePageProps) {
+export function BusinessWorkspacePage({ accessToken, currentUserId }: BusinessWorkspacePageProps) {
   const { businessId = "" } = useParams<{ businessId: string }>();
   const { data: businesses = [], isLoading, error } = useBusinesses(accessToken);
   const selectedBusinessId = useWorkspaceStore((state) => state.selectedBusinessId);
   const setSelectedBusinessId = useWorkspaceStore((state) => state.setSelectedBusinessId);
   const business = businesses.find((item) => item.id === businessId);
+  const { data: members = [] } = useMemberships(accessToken, businessId);
+  const currentRole = members.find((member) => member.user_id === currentUserId)?.role;
+  const canAccessBusinessTools = currentRole === "owner" || currentRole === "manager";
 
   useEffect(() => {
     if (businessId && selectedBusinessId !== businessId) {
@@ -43,8 +48,12 @@ export function BusinessWorkspacePage({ accessToken }: BusinessWorkspacePageProp
 
   const tabs = [
     { to: `/businesses/${businessId}`, label: "Overview", end: true, icon: Building2 },
-    { to: `/businesses/${businessId}/stores`, label: "Stores", icon: Store },
-    { to: `/businesses/${businessId}/members`, label: "Team members", icon: Users },
+    ...(canAccessBusinessTools
+      ? [
+          { to: `/businesses/${businessId}/stores`, label: "Stores", icon: Store },
+          { to: `/businesses/${businessId}/members`, label: "Team members", icon: Users },
+        ]
+      : []),
   ];
 
   return (
