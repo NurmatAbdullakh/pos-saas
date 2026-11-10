@@ -1,58 +1,31 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type AuthProvider = "google" | "password";
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  created_at: string;
-  authProvider: AuthProvider;
-}
-
-interface ApiEnvelope<T> {
-  success: boolean;
-  message?: string;
-  data: T;
-}
-
-interface AuthResponse {
-  accessToken: string;
-  user: User;
-}
-
-interface GoogleCredentialResponse {
-  credential: string;
-}
-
+type AuthProvider = "google" | "facebook" | "password";
+interface User { id: string; name: string; email: string; created_at: string; authProvider: AuthProvider }
+interface ApiEnvelope<T> { success: boolean; message?: string; data: T }
+interface AuthResponse { accessToken: string; user: User }
+interface GoogleCredentialResponse { credential: string }
 interface GoogleIdentity {
-  initialize(options: {
-    client_id: string;
-    callback: (response: GoogleCredentialResponse) => void;
+  initialize(options: { client_id: string; callback: (response: GoogleCredentialResponse) => void }): void;
+  renderButton(parent: HTMLElement, options: {
+    theme: "outline"; size: "large"; shape: "rectangular"; text: "continue_with"; width: number;
   }): void;
-  renderButton(
-    parent: HTMLElement,
-    options: {
-      theme: "outline";
-      size: "large";
-      shape: "rectangular";
-      text: "continue_with";
-      width: number;
-    },
-  ): void;
 }
-
+interface FacebookLoginResponse { authResponse?: { accessToken: string; userID: string } }
+interface FacebookSdk {
+  init(options: { appId: string; version: string; xfbml: boolean }): void;
+  login(callback: (response: FacebookLoginResponse) => void, options: { scope: string }): void;
+}
 declare global {
   interface Window {
-    google?: {
-      accounts: {
-        id: GoogleIdentity;
-      };
-    };
+    google?: { accounts: { id: GoogleIdentity } };
+    FB?: FacebookSdk;
+    fbAsyncInit?: () => void;
   }
 }
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID as string | undefined;
 
 async function readError(response: Response): Promise<string> {
   try {
@@ -68,6 +41,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState<"loading" | "signed-out" | "signed-in">("loading");
   const [googleReady, setGoogleReady] = useState(false);
+  const [facebookReady, setFacebookReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const googleButtonRef = useRef<HTMLDivElement>(null);
@@ -78,11 +52,7 @@ export default function App() {
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
     });
-
-    if (!response.ok) {
-      throw new Error(await readError(response));
-    }
-
+    if (!response.ok) throw new Error(await readError(response));
     const result = (await response.json()) as ApiEnvelope<User>;
     setUser(result.data);
     setAccessToken(token);
@@ -91,24 +61,11 @@ export default function App() {
 
   const restoreSession = useCallback(async () => {
     try {
-      const response = await fetch("/api/auth/refresh", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        setStatus("signed-out");
-        return;
-      }
-
-      const result = (await response.json()) as {
-        accessToken: string;
-      };
-
+      const response = await fetch("/api/auth/refresh", { method: "POST", credentials: "include" });
+      if (!response.ok) { setStatus("signed-out"); return; }
+      const result = (await response.json()) as { accessToken: string };
       await loadCurrentUser(result.accessToken);
-    } catch {
-      setStatus("signed-out");
-    }
+    } catch { setStatus("signed-out"); }
   }, [loadCurrentUser]);
 
   useEffect(() => {
@@ -117,62 +74,45 @@ export default function App() {
     void restoreSession();
   }, [restoreSession]);
 
-  const handleGoogleCredential = useCallback(async (response: GoogleCredentialResponse) => {
+  const completeSocialLogin = useCallback(async (
+    provider: "google" | "facebook",
+    credentials: { idToken: string } | { accessToken: string },
+  ) => {
     setBusy(true);
     setError("");
-
     try {
-      const loginResponse = await fetch("/api/auth/google", {
+      const response = await fetch(`/api/auth/${provider}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ idToken: response.credential }),
+        body: JSON.stringify(credentials),
       });
-
-      if (!loginResponse.ok) {
-        throw new Error(await readError(loginResponse));
-      }
-
-      const result = (await loginResponse.json()) as ApiEnvelope<AuthResponse>;
+      if (!response.ok) throw new Error(await readError(response));
+      const result = (await response.json()) as ApiEnvelope<AuthResponse>;
       setAccessToken(result.data.accessToken);
       setUser(result.data.user);
       setStatus("signed-in");
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Google sign-in failed.");
-    } finally {
-      setBusy(false);
-    }
+      setError(cause instanceof Error ? cause.message : `${provider} sign-in failed.`);
+    } finally { setBusy(false); }
   }, []);
 
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID) {
-      setError("Google sign-in is not configured. Set VITE_GOOGLE_CLIENT_ID.");
-      return;
-    }
-
+    if (!GOOGLE_CLIENT_ID) return;
     const scriptId = "google-identity-services";
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
-
     const initializeGoogle = () => {
       if (!window.google || !googleButtonRef.current) return;
-
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
-        callback: (credential) => void handleGoogleCredential(credential),
+        callback: (credential) => void completeSocialLogin("google", { idToken: credential.credential }),
       });
-
       googleButtonRef.current.innerHTML = "";
       window.google.accounts.id.renderButton(googleButtonRef.current, {
-        theme: "outline",
-        size: "large",
-        shape: "rectangular",
-        text: "continue_with",
-        width: 320,
+        theme: "outline", size: "large", shape: "rectangular", text: "continue_with", width: 320,
       });
-
       setGoogleReady(true);
     };
-
     if (!script) {
       script = document.createElement("script");
       script.id = scriptId;
@@ -181,16 +121,48 @@ export default function App() {
       script.defer = true;
       script.onload = initializeGoogle;
       document.head.appendChild(script);
-    } else if (window.google) {
-      initializeGoogle();
-    } else {
-      script.addEventListener("load", initializeGoogle);
-    }
+    } else if (window.google) initializeGoogle();
+    else script.addEventListener("load", initializeGoogle);
+    return () => script?.removeEventListener("load", initializeGoogle);
+  }, [completeSocialLogin]);
 
-    return () => {
-      script?.removeEventListener("load", initializeGoogle);
+  useEffect(() => {
+    if (!FACEBOOK_APP_ID) return;
+    const scriptId = "facebook-jssdk";
+    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+    const initializeFacebook = () => {
+      if (!window.FB) return;
+      window.FB.init({ appId: FACEBOOK_APP_ID, version: "v26.0", xfbml: false });
+      setFacebookReady(true);
     };
-  }, [handleGoogleCredential]);
+    window.fbAsyncInit = initializeFacebook;
+    if (!script) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://connect.facebook.net/en_US/sdk.js";
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    } else if (window.FB) initializeFacebook();
+    else script.addEventListener("load", initializeFacebook);
+    return () => {
+      script?.removeEventListener("load", initializeFacebook);
+      if (window.fbAsyncInit === initializeFacebook) delete window.fbAsyncInit;
+    };
+  }, []);
+
+  const loginWithFacebook = () => {
+    if (!window.FB || busy) return;
+    setError("");
+    window.FB.login((response) => {
+      const token = response.authResponse?.accessToken;
+      if (!token) {
+        setError("Facebook sign-in was cancelled or permission was not granted.");
+        return;
+      }
+      void completeSocialLogin("facebook", { accessToken: token });
+    }, { scope: "email,public_profile" });
+  };
 
   const logout = async () => {
     setBusy(true);
@@ -200,9 +172,8 @@ export default function App() {
         credentials: "include",
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
-    } catch {
-      // Clear the local session even if the network request fails.
-    } finally {
+    } catch { /* Clear local state even if the network request fails. */ }
+    finally {
       setAccessToken(null);
       setUser(null);
       setStatus("signed-out");
@@ -212,44 +183,40 @@ export default function App() {
   };
 
   if (status === "loading") {
-    return (
-      <main className="screen">
-        <div className="loading-card"><span className="spinner" /> Restoring your session…</div>
-      </main>
-    );
+    return <main className="screen"><div className="loading-card"><span className="spinner" /> Restoring your session…</div></main>;
   }
 
   if (status === "signed-in" && user) {
+    const providerLabel = user.authProvider === "google" ? "Google"
+      : user.authProvider === "facebook" ? "Facebook" : "Email / Password";
+    const providerMark = user.authProvider === "google" ? "G"
+      : user.authProvider === "facebook" ? "f" : "@";
     return (
       <main className="dashboard-screen">
         <header className="topbar">
-          <a className="brand" href="/"> <span className="brand-mark">P</span> POS SaaS</a>
+          <a className="brand" href="/"><span className="brand-mark">P</span> POS SaaS</a>
           <button className="logout-button" onClick={() => void logout()} disabled={busy}>
             {busy ? "Signing out…" : "Log out"}
           </button>
         </header>
-
         <section className="dashboard-content">
           <div className="eyebrow">WORKSPACE OVERVIEW</div>
           <h1>Welcome back, {user.name.split(" ")[0]}.</h1>
           <p className="subtitle">You’re signed in. Your workspace is ready.</p>
-
           <article className="profile-card">
             <div className="avatar">{user.name.charAt(0).toUpperCase()}</div>
             <div className="profile-main">
               <span className="profile-label">SIGNED-IN ACCOUNT</span>
-              <h2>{user.name}</h2>
-              <p>{user.email}</p>
+              <h2>{user.name}</h2><p>{user.email}</p>
             </div>
             <span className="status-dot" aria-label="Active session" />
           </article>
-
           <article className="session-card">
             <div>
               <span className="profile-label">AUTHENTICATION METHOD</span>
               <div className="provider-line">
-                <span className="google-g">G</span>
-                <strong>Logged in via: {user.authProvider === "google" ? "Google" : "Email / Password"}</strong>
+                <span className={`provider-icon provider-${user.authProvider}`}>{providerMark}</span>
+                <strong>Logged in via: {providerLabel}</strong>
               </div>
             </div>
             <span className="session-badge">Active session</span>
@@ -263,21 +230,31 @@ export default function App() {
   return (
     <main className="screen">
       <section className="login-card">
-        <a className="brand login-brand" href="/">
-          <span className="brand-mark">P</span> POS SaaS
-        </a>
+        <a className="brand login-brand" href="/"><span className="brand-mark">P</span> POS SaaS</a>
         <div className="login-icon"><span>↗</span></div>
         <div className="eyebrow">YOUR BUSINESS, IN CONTROL</div>
         <h1>Welcome back</h1>
         <p className="subtitle">Sign in to continue to your POS workspace.</p>
-
-        <div className="google-button-wrap" ref={googleButtonRef}>
-          {!googleReady && <div className="google-placeholder">Loading Google sign-in…</div>}
+        <div className="social-buttons">
+          {GOOGLE_CLIENT_ID && (
+            <div className="google-button-wrap" ref={googleButtonRef}>
+              {!googleReady && <div className="google-placeholder">Loading Google sign-in…</div>}
+            </div>
+          )}
+          {FACEBOOK_APP_ID && (
+            <button className="facebook-login-button" onClick={loginWithFacebook} disabled={!facebookReady || busy}>
+              <span className="facebook-mark">f</span>
+              {facebookReady ? "Continue with Facebook" : "Loading Facebook…"}
+            </button>
+          )}
+          {!GOOGLE_CLIENT_ID && !FACEBOOK_APP_ID && (
+            <div className="google-placeholder">Configure Google or Facebook credentials in apps/web/.env</div>
+          )}
         </div>
-        {busy && <p className="helper-text">Verifying your Google account…</p>}
+        {busy && <p className="helper-text">Verifying your account…</p>}
         {error && <div className="error-message" role="alert">{error}</div>}
         <div className="divider"><span>SECURE SIGN-IN</span></div>
-        <p className="privacy-note">Your account is protected. We never store your Google password.</p>
+        <p className="privacy-note">Your account is protected. We never store your social account password.</p>
       </section>
       <footer className="footer">POS SaaS <span>·</span> Simple. Secure. Connected.</footer>
     </main>
