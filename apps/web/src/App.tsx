@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-type AuthProvider = "google" | "facebook" | "password";
+type AuthProvider = "google" | "facebook" | "apple" | "password";
 interface User { id: string; name: string; email: string; created_at: string; authProvider: AuthProvider }
 interface ApiEnvelope<T> { success: boolean; message?: string; data: T }
 interface AuthResponse { accessToken: string; user: User }
@@ -12,6 +12,14 @@ interface GoogleIdentity {
   }): void;
 }
 interface FacebookLoginResponse { authResponse?: { accessToken: string; userID: string } }
+interface AppleAuthorizationResponse {
+  authorization: { code: string; state: string; id_token?: string };
+  user?: { name?: { firstName?: string; lastName?: string }; email?: string };
+}
+interface AppleAuthSdk {
+  init(options: { clientId: string; scope: string; redirectURI: string; state: string; nonce: string; usePopup: boolean }): void;
+  signIn(): Promise<AppleAuthorizationResponse>;
+}
 interface FacebookSdk {
   init(options: { appId: string; version: string; xfbml: boolean }): void;
   login(callback: (response: FacebookLoginResponse) => void, options: { scope: string }): void;
@@ -20,12 +28,15 @@ declare global {
   interface Window {
     google?: { accounts: { id: GoogleIdentity } };
     FB?: FacebookSdk;
+    AppleID?: { auth: AppleAuthSdk };
     fbAsyncInit?: () => void;
   }
 }
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID as string | undefined;
+const APPLE_CLIENT_ID = import.meta.env.VITE_APPLE_CLIENT_ID as string | undefined;
+const APPLE_REDIRECT_URI = import.meta.env.VITE_APPLE_REDIRECT_URI as string | undefined;
 
 async function readError(response: Response): Promise<string> {
   try {
@@ -42,6 +53,7 @@ export default function App() {
   const [status, setStatus] = useState<"loading" | "signed-out" | "signed-in">("loading");
   const [googleReady, setGoogleReady] = useState(false);
   const [facebookReady, setFacebookReady] = useState(false);
+  const [appleReady, setAppleReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const googleButtonRef = useRef<HTMLDivElement>(null);
@@ -162,6 +174,63 @@ export default function App() {
     }, { scope: "email,public_profile" });
   };
 
+  useEffect(() => {
+    if (!APPLE_CLIENT_ID || !APPLE_REDIRECT_URI) return;
+    const scriptId = "apple-signin-sdk";
+    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+    const initializeApple = () => {
+      if (!window.AppleID) return;
+      window.AppleID.auth.init({
+        clientId: APPLE_CLIENT_ID, scope: "name email",
+        redirectURI: APPLE_REDIRECT_URI, state: "apple-sdk-init",
+        nonce: "apple-sdk-init-nonce", usePopup: true,
+      });
+      setAppleReady(true);
+    };
+    if (!script) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
+      script.async = true;
+      script.onload = initializeApple;
+      document.head.appendChild(script);
+    } else if (window.AppleID) initializeApple();
+    else script.addEventListener("load", initializeApple);
+    return () => script?.removeEventListener("load", initializeApple);
+  }, []);
+
+  const loginWithApple = async () => {
+    if (!window.AppleID || busy || !APPLE_CLIENT_ID || !APPLE_REDIRECT_URI) return;
+    setError("");
+    const nonce = crypto.randomUUID().replace(/-/g, "");
+    const state = crypto.randomUUID().replace(/-/g, "");
+    try {
+      window.AppleID.auth.init({
+        clientId: APPLE_CLIENT_ID, scope: "name email",
+        redirectURI: APPLE_REDIRECT_URI, state, nonce, usePopup: true,
+      });
+      const response = await window.AppleID.auth.signIn();
+      if (response.authorization.state !== state) throw new Error("Apple sign-in state validation failed.");
+      setBusy(true);
+      const apiResponse = await fetch("/api/auth/apple", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          code: response.authorization.code, nonce,
+          firstName: response.user?.name?.firstName,
+          lastName: response.user?.name?.lastName,
+        }),
+      });
+      if (!apiResponse.ok) throw new Error(await readError(apiResponse));
+      const result = (await apiResponse.json()) as ApiEnvelope<AuthResponse>;
+      setAccessToken(result.data.accessToken);
+      setUser(result.data.user);
+      setStatus("signed-in");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Apple sign-in failed.");
+    } finally { setBusy(false); }
+  };
+
   const logout = async () => {
     setBusy(true);
     try {
@@ -186,9 +255,11 @@ export default function App() {
 
   if (status === "signed-in" && user) {
     const providerLabel = user.authProvider === "google" ? "Google"
-      : user.authProvider === "facebook" ? "Facebook" : "Email / Password";
+      : user.authProvider === "facebook" ? "Facebook"
+      : user.authProvider === "apple" ? "Apple" : "Email / Password";
     const providerMark = user.authProvider === "google" ? "G"
-      : user.authProvider === "facebook" ? "f" : "@";
+      : user.authProvider === "facebook" ? "f"
+      : user.authProvider === "apple" ? "A" : "@";
     return (
       <main className="dashboard-screen">
         <header className="topbar">
@@ -245,8 +316,14 @@ export default function App() {
               {facebookReady ? "Continue with Facebook" : "Loading Facebook…"}
             </button>
           )}
-          {!GOOGLE_CLIENT_ID && !FACEBOOK_APP_ID && (
-            <div className="google-placeholder">Configure Google or Facebook credentials in apps/web/.env</div>
+          {APPLE_CLIENT_ID && APPLE_REDIRECT_URI && (
+            <button className="apple-login-button" onClick={() => void loginWithApple()} disabled={!appleReady || busy}>
+              <span className="apple-mark" aria-hidden="true">●</span>
+              {appleReady ? "Continue with Apple" : "Loading Apple…"}
+            </button>
+          )}
+          {!GOOGLE_CLIENT_ID && !FACEBOOK_APP_ID && !(APPLE_CLIENT_ID && APPLE_REDIRECT_URI) && (
+            <div className="google-placeholder">Configure a sign-in provider in apps/web/.env</div>
           )}
         </div>
         {busy && <p className="helper-text">Verifying your account…</p>}
