@@ -200,6 +200,8 @@ export default function App() {
         credentials: "include",
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
+    } catch {
+      // Clear the local session even if the network request fails.
     } finally {
       setAccessToken(null);
       setUser(null);
