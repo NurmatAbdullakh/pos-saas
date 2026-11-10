@@ -150,7 +150,7 @@ export default function App() {
             console.debug("[Google Auth] credential callback received", {
               credentialPresent: Boolean(credential.credential),
             });
-                  if (!credential.credential) {
+            if (!credential.credential) {
               console.error("[Google Auth] Google returned an empty credential.");
               return;
             }
@@ -161,7 +161,7 @@ export default function App() {
 
         googleButtonRef.current.innerHTML = "";
         console.debug("[Google Auth] calling google.accounts.id.renderButton");
-          window.google.accounts.id.renderButton(googleButtonRef.current, {
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
           theme: "outline", size: "large", shape: "rectangular", text: "continue_with", width: 320,
         });
         console.debug("[Google Auth] renderButton completed");
@@ -352,11 +352,8 @@ export default function App() {
           {appleReady ? "Continue with Apple" : "Loading Apple…"}
         </button>
       )}
-      {!GOOGLE_CLIENT_ID && !FACEBOOK_APP_ID && !(APPLE_CLIENT_ID && APPLE_REDIRECT_URI) && (
-        <div className="google-placeholder">No social sign-in providers configured.</div>
-      )}
     </>
-  );
+  ) : null;
 
   return (
     <LoginPage
