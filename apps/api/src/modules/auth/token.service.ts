@@ -1,16 +1,19 @@
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { env } from "../../config/env.js";
 
+export type AuthProvider = "password" | "google";
+
 interface AccessTokenPayload extends JwtPayload {
   userId: string;
+  authProvider: AuthProvider;
 }
 
 export const tokenService = {
-  sign(userId: string): string {
+  sign(userId: string, authProvider: AuthProvider = "password"): string {
     return jwt.sign(
-      { userId },
+      { userId, authProvider },
       env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
   },
 
@@ -24,6 +27,9 @@ export const tokenService = {
       throw new Error("Invalid token payload");
     }
 
-    return payload as AccessTokenPayload;
+    const authProvider =
+      payload.authProvider === "google" ? "google" : "password";
+
+    return { ...payload, authProvider } as AccessTokenPayload;
   },
 };
