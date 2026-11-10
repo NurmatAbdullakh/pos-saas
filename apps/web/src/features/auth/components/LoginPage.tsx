@@ -14,11 +14,15 @@ export function LoginPage({ isLoading, error, onSubmit, socialContent }: LoginPa
   return (
     <main className="screen">
       <section className="login-card" aria-labelledby="login-title">
-        <Brand className="login-brand" />
-        <div className="login-icon" aria-hidden="true"><span>↗</span></div>
-        <div className="eyebrow">YOUR BUSINESS, IN CONTROL</div>
-        <h1 id="login-title">Welcome back</h1>
-        <p className="subtitle">Sign in to continue to your POS workspace.</p>
+        <header className="login-header">
+          <Brand className="login-brand" />
+          <span className="eyebrow">YOUR BUSINESS, IN CONTROL</span>
+        </header>
+
+        <div className="login-intro">
+          <h1 id="login-title">Welcome back</h1>
+          <p className="subtitle">Sign in to your workspace.</p>
+        </div>
 
         <LoginForm isLoading={isLoading} error={error} onSubmit={onSubmit} />
 
@@ -29,9 +33,8 @@ export function LoginPage({ isLoading, error, onSubmit, socialContent }: LoginPa
           </>
         )}
 
-        <div className="divider"><span>SECURE SIGN-IN</span></div>
         <p className="privacy-note">
-          Your account is protected. We never store your social account password.
+          Secure sign-in. Your social account password is never stored.
         </p>
       </section>
       <footer className="footer">POS SaaS <span>·</span> Simple. Secure. Connected.</footer>
