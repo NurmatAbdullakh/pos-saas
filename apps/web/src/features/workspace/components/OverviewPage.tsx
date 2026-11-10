@@ -24,7 +24,7 @@ export function OverviewPage() {
     return (
       <div className="mx-auto max-w-2xl pt-8">
         <div className="mb-7 text-center"><p className="text-[11px] font-bold uppercase tracking-[.16em] text-indigo-600">Welcome to POS SaaS</p><h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-slate-950">Let’s set up your workspace</h1><p className="mt-2 text-sm text-slate-500">Create your first business to start organizing stores and inviting your team.</p></div>
-        <EmptyState title="Your business starts here" description="A workspace keeps your branches, team and POS operations organized in one place." icon={<Building2 className="size-5" />} action={<Button asChild><Link to="/businesses">Create your first business <ArrowUpRight className="size-4" /></Link></Button>} />
+        <EmptyState title="Your business starts here" description="A workspace keeps your branches, team and POS operations organized in one place." icon={<Building2 className="size-5" />} action={<Link to="/businesses" className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700">Create your first business <ArrowUpRight className="size-4" /></Link>} />
       </div>
     );
   }
