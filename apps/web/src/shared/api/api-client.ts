@@ -11,13 +11,15 @@ export async function apiRequest<T>(
   accessToken: string,
   init: RequestInit = {},
 ): Promise<T> {
+  const headers = new Headers(init.headers);
+  if (init.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  headers.set("Authorization", `Bearer ${accessToken}`);
+
   const response = await fetch(path, {
     ...init,
-    headers: {
-      ...(init.body ? { "Content-Type": "application/json" } : {}),
-      Authorization: `Bearer ${accessToken}`,
-      ...init.headers,
-    },
+    headers,
     credentials: "include",
   });
 
