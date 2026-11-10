@@ -13,8 +13,8 @@ export function OverviewPage() {
   const { accessToken, user } = useOutletContext<WorkspaceOutletContext>();
   const selectedBusinessId = useWorkspaceStore((state) => state.selectedBusinessId) ?? "";
   const { data: businesses = [], isLoading: businessesLoading } = useBusinesses(accessToken);
-  const { data: stores = [], isLoading: storesLoading } = useStores(accessToken, selectedBusinessId);
-  const { data: members = [], isLoading: membersLoading } = useMemberships(accessToken, selectedBusinessId);
+  const { data: stores = [], isLoading: storesLoading, error: storesError } = useStores(accessToken, selectedBusinessId);
+  const { data: members = [], isLoading: membersLoading, error: membersError } = useMemberships(accessToken, selectedBusinessId);
   const selectedBusiness = businesses.find((business) => business.id === selectedBusinessId);
 
   if (businessesLoading) return <LoadingState label="Preparing your workspace…" />;
@@ -30,8 +30,8 @@ export function OverviewPage() {
 
   const stats = [
     { label: "Businesses", value: businesses.length, note: "Workspaces you belong to", icon: Building2, tint: "bg-indigo-50 text-indigo-600", href: "/businesses" },
-    { label: "Stores", value: storesLoading ? "—" : stores.length, note: "Locations in this business", icon: MapPin, tint: "bg-sky-50 text-sky-700", href: "/stores" },
-    { label: "Team members", value: membersLoading ? "—" : members.length, note: "People with workspace access", icon: Users, tint: "bg-amber-50 text-amber-700", href: "/team" },
+    { label: "Stores", value: storesLoading || storesError ? "—" : stores.length, note: storesError ? "Access restricted" : "Locations in this business", icon: MapPin, tint: "bg-sky-50 text-sky-700", href: "/stores" },
+    { label: "Team members", value: membersLoading || membersError ? "—" : members.length, note: membersError ? "Access restricted" : "People with workspace access", icon: Users, tint: "bg-amber-50 text-amber-700", href: "/team" },
   ];
 
   return (
