@@ -5,6 +5,7 @@ import { Brand } from "../../../shared/components/Brand";
 import { Button } from "../../../shared/components/ui/button";
 import { LoadingState } from "../../../shared/components/LoadingState";
 import { useBusinesses } from "../../businesses/hooks/useBusinesses";
+import { useMemberships } from "../../memberships/hooks/useMemberships";
 import { useWorkspaceStore } from "../store/workspace.store";
 import type { AuthUser } from "../../auth/types/auth.types";
 
@@ -30,6 +31,12 @@ const navigation = [
 export function WorkspaceLayout({ accessToken, user, isSigningOut, onLogout }: WorkspaceLayoutProps) {
   const { data: businesses = [], isLoading } = useBusinesses(accessToken);
   const selectedBusinessId = useWorkspaceStore((state) => state.selectedBusinessId);
+  const { data: members = [] } = useMemberships(accessToken, selectedBusinessId ?? "");
+  const currentRole = members.find((member) => member.user_id === user.id)?.role;
+  const visibleNavigation = navigation.filter((item) => {
+    if (item.to === "/stores" || item.to === "/team") return currentRole === "owner" || currentRole === "manager";
+    return true;
+  });
   const setSelectedBusinessId = useWorkspaceStore((state) => state.setSelectedBusinessId);
   const location = useLocation();
 
@@ -44,7 +51,7 @@ export function WorkspaceLayout({ accessToken, user, isSigningOut, onLogout }: W
     }
   }, [businesses, selectedBusinessId, setSelectedBusinessId]);
 
-  const navLinks = navigation.map(({ to, label, icon: Icon, end }) => (
+  const navLinks = visibleNavigation.map(({ to, label, icon: Icon, end }) => (
     <NavLink key={to} to={to} end={end} className={({ isActive }) =>
       `flex shrink-0 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${isActive ? "bg-indigo-50 text-indigo-700" : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"}`
     }>
@@ -71,7 +78,7 @@ export function WorkspaceLayout({ accessToken, user, isSigningOut, onLogout }: W
         <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur-xl sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3 lg:hidden"><Brand /></div>
-            <div className="hidden min-w-0 items-center gap-2 text-xs text-slate-400 lg:flex"><span>Workspace</span><span>/</span><span className="font-semibold text-slate-700">{navigation.find((item) => item.to === location.pathname)?.label ?? "Overview"}</span></div>
+            <div className="hidden min-w-0 items-center gap-2 text-xs text-slate-400 lg:flex"><span>Workspace</span><span>/</span><span className="font-semibold text-slate-700">{visibleNavigation.find((item) => item.to === location.pathname)?.label ?? "Overview"}</span></div>
             <div className="ml-auto flex items-center gap-3">
               <label className="relative flex min-w-0 items-center">
                 <Building2 className="pointer-events-none absolute left-3 size-4 text-slate-400" />
