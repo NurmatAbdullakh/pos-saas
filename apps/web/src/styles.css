@@ -249,3 +249,29 @@ h1 {
 .provider-google { color: #4285f4; }
 .provider-facebook { color: #1877f2; }
 .provider-password { color: #64748b; }
+
+
+.apple-login-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid #000;
+  border-radius: 6px;
+  background: #000;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.apple-login-button:hover { background: #222; }
+.apple-login-button:disabled { opacity: .6; cursor: wait; }
+.apple-mark {
+  font-size: 17px;
+  line-height: 1;
+  color: #fff;
+}
+.provider-apple { color: #111; }
