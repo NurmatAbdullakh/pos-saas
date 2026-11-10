@@ -3,7 +3,6 @@ import { Building2, ChevronDown, LayoutDashboard, LogOut, Store, Users } from "l
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Brand } from "../../../shared/components/Brand";
 import { Button } from "../../../shared/components/ui/button";
-import { LoadingState } from "../../../shared/components/LoadingState";
 import { useBusinesses } from "../../businesses/hooks/useBusinesses";
 import { useMemberships } from "../../memberships/hooks/useMemberships";
 import { useWorkspaceStore } from "../store/workspace.store";
