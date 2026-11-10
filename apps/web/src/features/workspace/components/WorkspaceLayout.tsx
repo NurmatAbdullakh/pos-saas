@@ -35,6 +35,7 @@ export function WorkspaceLayout({ accessToken, user, isSigningOut, onLogout }: W
   const selectedBusiness = businesses.find((business) => business.id === selectedBusinessId);
 
   useEffect(() => {
+    if (isLoading) return;
     if (!businesses.length) {
       if (selectedBusinessId) setSelectedBusinessId(null);
       return;
