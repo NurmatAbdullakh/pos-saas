@@ -110,6 +110,13 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    // The login form (and its ref) is not mounted while the session is restoring.
+    // Initialize Google only after the signed-out UI has rendered.
+    if (status !== "signed-out") {
+      console.debug("[Google Auth] waiting for signed-out screen before initializing", { status });
+      return;
+    }
+
     console.debug("[Google Auth] effect started", {
       clientIdConfigured: Boolean(GOOGLE_CLIENT_ID),
       sdkAvailable: Boolean(window.google?.accounts?.id),
@@ -202,7 +209,7 @@ export default function App() {
       console.debug("[Google Auth] effect cleanup.");
       script?.removeEventListener("load", initializeGoogle);
     };
-  }, [completeSocialLogin]);
+  }, [completeSocialLogin, status]);
 
   useEffect(() => {
     if (!FACEBOOK_APP_ID) return;
