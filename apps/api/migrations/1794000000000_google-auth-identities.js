@@ -1,4 +1,4 @@
-exports.up = (pgm) => {
+export const up = (pgm) => {
   pgm.alterColumn("users", "password_hash", {
     type: "text",
     notNull: false,
@@ -62,7 +62,7 @@ exports.up = (pgm) => {
   });
 };
 
-exports.down = (pgm) => {
+export const down = (pgm) => {
   pgm.dropTable("user_identities");
   pgm.dropColumn("refresh_tokens", "auth_provider");
   pgm.alterColumn("users", "password_hash", {
