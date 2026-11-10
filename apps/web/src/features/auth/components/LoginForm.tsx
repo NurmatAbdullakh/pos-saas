@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
 import type { LoginCredentials } from "../types/auth.types";
+import { useLoginForm } from "../hooks/useLoginForm";
 
 interface LoginFormProps {
   isLoading: boolean;
@@ -8,36 +8,21 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ isLoading, error, onSubmit }: LoginFormProps) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [validationError, setValidationError] = useState("");
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setValidationError("");
-
-    const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail) {
-      setValidationError("Email is required.");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-      setValidationError("Enter a valid email address.");
-      return;
-    }
-    if (password.length < 12) {
-      setValidationError("Password must contain at least 12 characters.");
-      return;
-    }
-
-    await onSubmit({ email: normalizedEmail, password });
-  };
+  const {
+    email,
+    password,
+    showPassword,
+    validationError,
+    setEmail,
+    setPassword,
+    togglePasswordVisibility,
+    submit,
+  } = useLoginForm({ onSubmit });
 
   const message = validationError || error;
 
   return (
-    <form className="login-form" onSubmit={(event) => void handleSubmit(event)} noValidate>
+    <form className="login-form" onSubmit={(event) => void submit(event)} noValidate>
       <div className="form-field">
         <label htmlFor="login-email">Email</label>
         <input
@@ -71,7 +56,7 @@ export function LoginForm({ isLoading, error, onSubmit }: LoginFormProps) {
           <button
             className="password-visibility-button"
             type="button"
-            onClick={() => setShowPassword((visible) => !visible)}
+            onClick={togglePasswordVisibility}
             aria-label={showPassword ? "Hide password" : "Show password"}
             aria-pressed={showPassword}
           >
