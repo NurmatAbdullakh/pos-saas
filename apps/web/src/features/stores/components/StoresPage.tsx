@@ -46,7 +46,7 @@ export function StoresPage({ accessToken, currentUserId }: { accessToken: string
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search stores…" className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 sm:max-w-xs" />
           </div>
           {isLoading ? <LoadingState label="Loading stores…" /> : error ? <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">{error.message}</div> : filtered.length === 0 ? (
-            <EmptyState title={search ? "No stores found" : "Add your first store"} description={search ? "Try a different search term." : "Create locations for your business. You can add a main branch, warehouse or any other location."} icon={<MapPin className="size-5" />} action={!search ? <Button onClick={() => setFormOpen(true)}><Plus className="size-4" /> Add store</Button> : undefined} />
+            <EmptyState title={search ? "No stores found" : "Add your first store"} description={search ? "Try a different search term." : "Create locations for your business. You can add a main branch, warehouse or any other location."} icon={<MapPin className="size-5" />} action={!search && canManageStores ? <Button onClick={() => setFormOpen(true)}><Plus className="size-4" /> Add store</Button> : undefined} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {filtered.map((store, index) => (
