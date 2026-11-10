@@ -49,7 +49,7 @@ export function WorkspaceLayout({ accessToken, user, isSigningOut, onLogout }: W
     if (!businesses.some((business) => business.id === selectedBusinessId)) {
       setSelectedBusinessId(businesses[0].id);
     }
-  }, [businesses, selectedBusinessId, setSelectedBusinessId]);
+  }, [businesses, isLoading, selectedBusinessId, setSelectedBusinessId]);
 
   const navLinks = visibleNavigation.map(({ to, label, icon: Icon, end }) => (
     <NavLink key={to} to={to} end={end} className={({ isActive }) =>
