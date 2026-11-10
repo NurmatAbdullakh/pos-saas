@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { MapPin, Pencil, Plus, Store as StoreIcon, Trash2 } from "lucide-react";
 import { useStores, useStoreMutations } from "../hooks/useStores";
+import { useMemberships } from "../../memberships/hooks/useMemberships";
 import { useWorkspaceStore } from "../../workspace/store/workspace.store";
 import { PageHeader } from "../../../shared/components/PageHeader";
 import { EmptyState } from "../../../shared/components/EmptyState";
@@ -10,10 +11,13 @@ import { Dialog } from "../../../shared/components/ui/dialog";
 import { StoreForm } from "./StoreForm";
 import type { Store } from "../types/store.types";
 
-export function StoresPage({ accessToken }: { accessToken: string }) {
+export function StoresPage({ accessToken, currentUserId }: { accessToken: string; currentUserId: string }) {
   const businessId = useWorkspaceStore((state) => state.selectedBusinessId) ?? "";
   const { data: stores = [], isLoading, error } = useStores(accessToken, businessId);
   const mutations = useStoreMutations(accessToken, businessId);
+  const { data: members = [] } = useMemberships(accessToken, businessId);
+  const currentMember = members.find((member) => member.user_id === currentUserId);
+  const canManageStores = currentMember?.role === "owner" || currentMember?.role === "manager";
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Store | null>(null);
   const [deleting, setDeleting] = useState<Store | null>(null);
@@ -34,7 +38,7 @@ export function StoresPage({ accessToken }: { accessToken: string }) {
 
   return (
     <div>
-      <PageHeader eyebrow="Business operations" title="Stores" description="Organize branches and locations under your selected business." action={<Button onClick={() => { setEditing(null); setFormOpen(true); }} disabled={!businessId}><Plus className="size-4" /> Add store</Button>} />
+      <PageHeader eyebrow="Business operations" title="Stores" description="Organize branches and locations under your selected business." action={<Button onClick={() => { setEditing(null); setFormOpen(true); }} disabled={!businessId || !canManageStores} title={!canManageStores ? "Only owners and managers can manage stores" : undefined}><Plus className="size-4" /> Add store</Button>} />
       {!businessId ? <EmptyState title="Select a business first" description="Choose a business from the workspace switcher to manage its stores." icon={<StoreIcon className="size-5" />} /> : (
         <>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -53,10 +57,10 @@ export function StoresPage({ accessToken }: { accessToken: string }) {
                   </div>
                   <h2 className="mt-5 truncate font-display text-lg font-bold text-slate-950">{store.name}</h2>
                   <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-500"><MapPin className="size-3.5" /> Business location</p>
-                  <div className="mt-5 flex justify-end gap-1 border-t border-slate-100 pt-3">
+                  {canManageStores && <div className="mt-5 flex justify-end gap-1 border-t border-slate-100 pt-3">
                     <Button variant="ghost" size="sm" onClick={() => { setEditing(store); setFormOpen(true); }}><Pencil className="size-3.5" /> Edit</Button>
                     <Button variant="ghost" size="sm" className="text-rose-600 hover:bg-rose-50 hover:text-rose-700" onClick={() => setDeleting(store)}><Trash2 className="size-3.5" /> Delete</Button>
-                  </div>
+                  </div>}
                 </article>
               ))}
             </div>
