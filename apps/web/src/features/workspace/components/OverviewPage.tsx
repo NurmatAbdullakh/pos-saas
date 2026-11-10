@@ -16,6 +16,9 @@ export function OverviewPage() {
   const { data: stores = [], isLoading: storesLoading, error: storesError } = useStores(accessToken, selectedBusinessId);
   const { data: members = [], isLoading: membersLoading, error: membersError } = useMemberships(accessToken, selectedBusinessId);
   const selectedBusiness = businesses.find((business) => business.id === selectedBusinessId);
+  const currentRole = members.find((member) => member.user_id === user.id)?.role;
+  const canManageStores = currentRole === "owner" || currentRole === "manager";
+  const canManageMembers = currentRole === "owner";
 
   if (businessesLoading) return <LoadingState label="Preparing your workspace…" />;
 
@@ -55,7 +58,11 @@ export function OverviewPage() {
       <section className="mt-7 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
         <div className="flex items-center gap-2"><WalletCards className="size-4 text-indigo-600" /><h2 className="text-sm font-bold text-slate-900">Quick actions</h2></div>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {[{ label: "Add another business", href: "/businesses", icon: Building2 }, { label: "Create a store", href: "/stores", icon: MapPin }, { label: "Invite team member", href: "/team", icon: Users }].map(({ label, href, icon: Icon }) => <Link key={label} to={href} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3.5 text-sm font-semibold text-slate-700 transition hover:border-indigo-100 hover:bg-indigo-50/50 hover:text-indigo-700"><span className="grid size-9 place-items-center rounded-lg bg-slate-100 text-slate-500"><Icon className="size-4" /></span>{label}<ArrowUpRight className="ml-auto size-4 text-slate-300" /></Link>)}
+          {[
+            { label: "Add another business", href: "/businesses", icon: Building2 },
+            ...(canManageStores ? [{ label: "Create a store", href: "/stores", icon: MapPin }] : []),
+            ...(canManageMembers ? [{ label: "Invite team member", href: "/team", icon: Users }] : []),
+          ].map(({ label, href, icon: Icon }) => <Link key={label} to={href} className="flex items-center gap-3 rounded-xl border border-slate-100 p-3.5 text-sm font-semibold text-slate-700 transition hover:border-indigo-100 hover:bg-indigo-50/50 hover:text-indigo-700"><span className="grid size-9 place-items-center rounded-lg bg-slate-100 text-slate-500"><Icon className="size-4" /></span>{label}<ArrowUpRight className="ml-auto size-4 text-slate-300" /></Link>)}
         </div>
       </section>
     </div>
