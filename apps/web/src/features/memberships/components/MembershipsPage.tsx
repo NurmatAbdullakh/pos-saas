@@ -24,6 +24,8 @@ export function MembershipsPage({ accessToken, currentUserId }: { accessToken: s
   const [deleting, setDeleting] = useState<BusinessMember | null>(null);
   const [search, setSearch] = useState("");
 
+  const currentMember = members.find((member) => member.user_id === currentUserId);
+  const canManageMembers = currentMember?.role === "owner";
   const filtered = members.filter((member) => [member.name, member.email].some((value) => value.toLowerCase().includes(search.toLowerCase())));
   async function addMember(values: { name: string; email: string; password: string; role: MemberRole }) {
     await mutations.create.mutateAsync(values);
@@ -37,7 +39,7 @@ export function MembershipsPage({ accessToken, currentUserId }: { accessToken: s
 
   return (
     <div>
-      <PageHeader eyebrow="Workspace access" title="Team members" description="Invite people and control what they can access." action={<Button onClick={() => setFormOpen(true)} disabled={!businessId}><Plus className="size-4" /> Add member</Button>} />
+      <PageHeader eyebrow="Workspace access" title="Team members" description="Invite people and control what they can access." action={<Button onClick={() => setFormOpen(true)} disabled={!businessId || !canManageMembers} title={!canManageMembers ? "Only business owners can manage team access" : undefined}><Plus className="size-4" /> Add member</Button>} />
       {!businessId ? <EmptyState title="Select a business first" description="Choose a business from the workspace switcher to manage its team." icon={<Users className="size-5" />} /> : (
         <>
           <div className="mb-5 grid gap-3 sm:grid-cols-3">
@@ -72,13 +74,13 @@ export function MembershipsPage({ accessToken, currentUserId }: { accessToken: s
                       <p className="hidden truncate text-sm text-slate-500 md:block">{member.email}</p>
                       <div className="flex items-center gap-2">
                         {member.role === "owner" ? <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-semibold ${role.classes}`}><ShieldCheck className="size-3.5" /> Owner</span> : (
-                          <select aria-label={`Role for ${member.name}`} value={member.role} disabled={mutations.updateRole.isPending || isSelf} onChange={(event) => void mutations.updateRole.mutateAsync({ id: member.id, role: event.target.value as MemberRole })} className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-indigo-400 disabled:bg-slate-50 disabled:text-slate-400">
+                          <select aria-label={`Role for ${member.name}`} value={member.role} disabled={mutations.updateRole.isPending || isSelf || !canManageMembers} onChange={(event) => void mutations.updateRole.mutateAsync({ id: member.id, role: event.target.value as MemberRole })} className="h-9 w-full rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold text-slate-700 outline-none focus:border-indigo-400 disabled:bg-slate-50 disabled:text-slate-400">
                             <option value="manager">Manager</option><option value="cashier">Cashier</option>
                           </select>
                         )}
                       </div>
                       <div className="flex justify-end">
-                        {!isSelf && member.role !== "owner" && <Button variant="ghost" size="icon" aria-label={`Remove ${member.name}`} className="text-slate-400 hover:bg-rose-50 hover:text-rose-600" onClick={() => setDeleting(member)}><Trash2 className="size-4" /></Button>}
+                        {canManageMembers && !isSelf && member.role !== "owner" && <Button variant="ghost" size="icon" aria-label={`Remove ${member.name}`} className="text-slate-400 hover:bg-rose-50 hover:text-rose-600" onClick={() => setDeleting(member)}><Trash2 className="size-4" /></Button>}
                       </div>
                     </div>
                   );
