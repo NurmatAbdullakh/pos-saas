@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { socialProviderConfig } from "../types/auth-provider.types";
+import { socialProviderConfig } from "../config/auth.config";
 
 interface UseSocialAuthOptions {
   isEnabled: boolean;
