@@ -6,6 +6,8 @@ import { useSocialAuth } from "./features/auth/hooks/useSocialAuth";
 import { WorkspaceLayout } from "./features/workspace/components/WorkspaceLayout";
 import { OverviewPage } from "./features/workspace/components/OverviewPage";
 import { BusinessesPage } from "./features/businesses/components/BusinessesPage";
+import { BusinessWorkspacePage } from "./features/businesses/components/BusinessWorkspacePage";
+import { BusinessWorkspaceHome } from "./features/businesses/components/BusinessWorkspaceHome";
 import { StoresPage } from "./features/stores/components/StoresPage";
 import { MembershipsPage } from "./features/memberships/components/MembershipsPage";
 
@@ -59,8 +61,11 @@ export default function App() {
       <Route element={<WorkspaceLayout accessToken={auth.accessToken} user={auth.user} isSigningOut={auth.isLoading} onLogout={() => void auth.signOut()} />}>
         <Route index element={<OverviewPage />} />
         <Route path="businesses" element={<BusinessesPage accessToken={auth.accessToken} userId={auth.user.id} />} />
-        <Route path="stores" element={<StoresPage accessToken={auth.accessToken} currentUserId={auth.user.id} />} />
-        <Route path="team" element={<MembershipsPage accessToken={auth.accessToken} currentUserId={auth.user.id} />} />
+        <Route path="businesses/:businessId" element={<BusinessWorkspacePage accessToken={auth.accessToken} />}>
+          <Route index element={<BusinessWorkspaceHome />} />
+          <Route path="stores" element={<StoresPage accessToken={auth.accessToken} currentUserId={auth.user.id} />} />
+          <Route path="members" element={<MembershipsPage accessToken={auth.accessToken} currentUserId={auth.user.id} />} />
+        </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
