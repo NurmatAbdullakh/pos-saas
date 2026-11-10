@@ -59,7 +59,7 @@ export default function App() {
       <Route element={<WorkspaceLayout accessToken={auth.accessToken} user={auth.user} isSigningOut={auth.isLoading} onLogout={() => void auth.signOut()} />}>
         <Route index element={<OverviewPage />} />
         <Route path="businesses" element={<BusinessesPage accessToken={auth.accessToken} userId={auth.user.id} />} />
-        <Route path="stores" element={<StoresPage accessToken={auth.accessToken} />} />
+        <Route path="stores" element={<StoresPage accessToken={auth.accessToken} currentUserId={auth.user.id} />} />
         <Route path="team" element={<MembershipsPage accessToken={auth.accessToken} currentUserId={auth.user.id} />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
