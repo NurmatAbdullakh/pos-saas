@@ -1,4 +1,4 @@
-import type { SocialProviderConfig } from "./auth.config.types";
+import type { SocialProviderConfig } from "../types/auth-provider.types";
 
 export const socialProviderConfig: SocialProviderConfig = {
   googleClientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
