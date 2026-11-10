@@ -341,3 +341,68 @@ h1 {
 .login-submit-button:disabled { opacity: .6; cursor: wait; }
 .login-form .error-message { margin: 0; }
 .login-form + .divider { margin-top: 25px; }
+
+/* Compact login layout: keep sign-in actions visible without unnecessary scrolling. */
+.login-card {
+  padding: 24px 36px 20px;
+}
+
+.login-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.login-brand { margin: 0; }
+.login-header .eyebrow {
+  font-size: 9px;
+  letter-spacing: 1.1px;
+  white-space: nowrap;
+}
+.login-intro { margin-bottom: 18px; }
+.login-intro h1 {
+  margin: 0 0 4px;
+  font-size: 25px;
+  letter-spacing: -.8px;
+}
+.login-intro .subtitle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.login-form { gap: 13px; }
+.form-field { gap: 5px; }
+.form-field input { min-height: 43px; }
+.login-submit-button { min-height: 43px; }
+.login-card .divider {
+  margin: 17px 0 11px;
+}
+.login-card .social-buttons { gap: 8px; }
+.login-card .privacy-note {
+  margin-top: 14px;
+  font-size: 10px;
+}
+.screen { padding-top: 16px; padding-bottom: 12px; }
+.screen > .footer { margin-top: 14px; }
+
+@media (max-width: 520px) {
+  .login-card { padding: 22px 20px 18px; }
+  .login-header { margin-bottom: 18px; }
+  .login-header .eyebrow {
+    font-size: 8px;
+    letter-spacing: .8px;
+  }
+}
+
+@media (max-height: 760px) {
+  .screen { justify-content: flex-start; }
+  .login-card { padding-top: 20px; padding-bottom: 18px; }
+  .login-header { margin-bottom: 14px; }
+  .login-intro { margin-bottom: 14px; }
+  .login-form { gap: 10px; }
+  .login-card .divider { margin: 13px 0 9px; }
+  .login-card .privacy-note { margin-top: 10px; }
+  .screen > .footer { margin-top: 10px; }
+}
