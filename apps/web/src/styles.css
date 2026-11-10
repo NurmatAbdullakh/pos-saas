@@ -275,3 +275,69 @@ h1 {
   color: #fff;
 }
 .provider-apple { color: #111; }
+
+
+/* Authentication form */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  text-align: left;
+}
+.form-field { display: flex; flex-direction: column; gap: 7px; }
+.form-field label {
+  color: #465168;
+  font-size: 12px;
+  font-weight: 600;
+}
+.form-field input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid #dce1ea;
+  border-radius: 9px;
+  outline: none;
+  background: #fff;
+  color: #172033;
+  font: inherit;
+  font-size: 13px;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.form-field input::placeholder { color: #a0a7b6; }
+.form-field input:focus {
+  border-color: #7770ef;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, .1);
+}
+.form-field input:disabled { background: #f8f9fc; cursor: wait; }
+.password-input-wrap { position: relative; }
+.password-input-wrap input { padding-right: 66px; }
+.password-visibility-button {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  padding: 5px;
+  border: 0;
+  background: transparent;
+  color: #5b55d9;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.login-submit-button {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 2px;
+  border: 0;
+  border-radius: 9px;
+  background: #4f46e5;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s ease, opacity .15s ease;
+}
+.login-submit-button:hover { background: #4338ca; }
+.login-submit-button:disabled { opacity: .6; cursor: wait; }
+.login-form .error-message { margin: 0; }
+.login-form + .divider { margin-top: 25px; }
