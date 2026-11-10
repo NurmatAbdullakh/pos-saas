@@ -64,7 +64,7 @@ export function BusinessesPage({ accessToken, userId }: BusinessesPageProps) {
 
       <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-500">{businesses.length} {businesses.length === 1 ? "business" : "businesses"} in your workspace</p>
-        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search businesses…" className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 sm:max-w-xs" />
+        <input aria-label="Search businesses" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search businesses…" className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 sm:max-w-xs" />
       </div>
 
       {isLoading ? <LoadingState label="Loading businesses…" /> : error ? (
