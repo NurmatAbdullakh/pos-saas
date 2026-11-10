@@ -1,12 +1,16 @@
 # POS SaaS Web
 
-Minimal React + Vite frontend for the POS SaaS Google sign-in demo.
+Minimal React + Vite frontend for the POS SaaS authentication demo.
 
 ## Setup
 
-1. Create a Google OAuth 2.0 Web client in Google Cloud Console.
-2. Add `http://localhost:5173` as an authorized JavaScript origin.
-3. Copy `.env.example` to `.env` and set `VITE_GOOGLE_CLIENT_ID` to the Web client ID.
+1. Create a Google OAuth Web client and/or a Meta app with the Facebook Login product.
+2. For local development, configure the frontend origins allowed by each provider:
+   - Google: `http://localhost:5173` as an authorized JavaScript origin.
+   - Meta: `http://localhost:5173` in the app's allowed domains / Facebook Login settings.
+3. Copy `.env.example` to `.env` and set the public provider app IDs:
+   - `VITE_GOOGLE_CLIENT_ID`
+   - `VITE_FACEBOOK_APP_ID`
 4. Install dependencies and start the frontend:
 
 ```bash
@@ -16,4 +20,4 @@ npm run dev
 
 The Vite development server proxies `/api` requests to `http://localhost:3000`.
 
-The browser receives a Google ID token from Google Identity Services. The API verifies it and issues the POS SaaS access token plus an HttpOnly refresh-token cookie. The frontend does not persist refresh tokens or Google ID tokens.
+Google Identity Services returns an ID token; Facebook Login returns a user access token. The API validates each token with its provider, then issues the POS SaaS access token and an HttpOnly refresh-token cookie. Provider secrets stay on the API and are never exposed to the browser.
