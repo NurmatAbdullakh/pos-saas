@@ -40,7 +40,6 @@ export const appleTokenService = {
   async exchangeAndVerify(input: {
     code: string;
     nonce: string;
-    redirectUri: string;
     firstName?: string;
     lastName?: string;
   }): Promise<AppleProfile> {
@@ -57,7 +56,7 @@ export const appleTokenService = {
         client_secret: createClientSecret(),
         code: input.code,
         grant_type: "authorization_code",
-        redirect_uri: input.redirectUri,
+        redirect_uri: env.APPLE_REDIRECT_URI,
       });
 
       const response = await fetch("https://appleid.apple.com/auth/token", {
