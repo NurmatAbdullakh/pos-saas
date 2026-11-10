@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LoginPage } from "./features/auth/components/LoginPage";
 import { DashboardPage } from "./features/dashboard/components/DashboardPage";
-import type { LoginCredentials } from "./features/auth/types/auth.types";
+import type { AuthUser, LoginCredentials } from "./features/auth/types/auth.types";
+import { loginWithPassword as authenticateWithPassword } from "./features/auth/api/auth.api";
+import { getApiErrorMessage } from "./shared/api/getApiErrorMessage";
 
-type AuthProvider = "google" | "facebook" | "apple" | "password";
-interface User { id: string; name: string; email: string; created_at: string; authProvider: AuthProvider }
+type User = AuthUser;
 interface ApiEnvelope<T> { success: boolean; message?: string; data: T }
 interface AuthResponse { accessToken: string; user: User }
 interface GoogleCredentialResponse { credential: string }
@@ -41,14 +42,6 @@ const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID as string | undefin
 const APPLE_CLIENT_ID = import.meta.env.VITE_APPLE_CLIENT_ID as string | undefined;
 const APPLE_REDIRECT_URI = import.meta.env.VITE_APPLE_REDIRECT_URI as string | undefined;
 
-async function readError(response: Response): Promise<string> {
-  try {
-    const body = await response.json();
-    return body.message || "Something went wrong. Please try again.";
-  } catch {
-    return "Something went wrong. Please try again.";
-  }
-}
 
 export default function App() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
@@ -67,7 +60,7 @@ export default function App() {
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
     });
-    if (!response.ok) throw new Error(await readError(response));
+    if (!response.ok) throw new Error(await getApiErrorMessage(response));
     const result = (await response.json()) as ApiEnvelope<User>;
     setUser(result.data);
     setAccessToken(token);
@@ -102,7 +95,7 @@ export default function App() {
         credentials: "include",
         body: JSON.stringify(credentials),
       });
-      if (!response.ok) throw new Error(await readError(response));
+      if (!response.ok) throw new Error(await getApiErrorMessage(response));
       const result = (await response.json()) as ApiEnvelope<AuthResponse>;
       setAccessToken(result.data.accessToken);
       setUser(result.data.user);
@@ -139,7 +132,6 @@ export default function App() {
         sdkAvailable: Boolean(window.google?.accounts?.id),
         buttonRefAvailable: Boolean(googleButtonRef.current),
       });
-      debugger;
 
       if (!window.google?.accounts?.id) {
         console.error("[Google Auth] SDK callback fired, but window.google.accounts.id is unavailable.");
@@ -158,8 +150,7 @@ export default function App() {
             console.debug("[Google Auth] credential callback received", {
               credentialPresent: Boolean(credential.credential),
             });
-            debugger;
-            if (!credential.credential) {
+                  if (!credential.credential) {
               console.error("[Google Auth] Google returned an empty credential.");
               return;
             }
@@ -170,8 +161,7 @@ export default function App() {
 
         googleButtonRef.current.innerHTML = "";
         console.debug("[Google Auth] calling google.accounts.id.renderButton");
-        debugger;
-        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          window.google.accounts.id.renderButton(googleButtonRef.current, {
           theme: "outline", size: "large", shape: "rectangular", text: "continue_with", width: 320,
         });
         console.debug("[Google Auth] renderButton completed");
@@ -237,20 +227,13 @@ export default function App() {
     };
   }, []);
 
-  const loginWithPassword = async ({ email, password }: LoginCredentials) => {
+  const loginWithPassword = async (credentials: LoginCredentials) => {
     setBusy(true);
     setError("");
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
-      });
-      if (!response.ok) throw new Error(await readError(response));
-      const result = (await response.json()) as ApiEnvelope<AuthResponse>;
-      setAccessToken(result.data.accessToken);
-      setUser(result.data.user);
+      const result = await authenticateWithPassword(credentials);
+      setAccessToken(result.accessToken);
+      setUser(result.user);
       setStatus("signed-in");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to sign in.");
@@ -313,7 +296,7 @@ export default function App() {
           lastName: response.user?.name?.lastName,
         }),
       });
-      if (!apiResponse.ok) throw new Error(await readError(apiResponse));
+      if (!apiResponse.ok) throw new Error(await getApiErrorMessage(apiResponse));
       const result = (await apiResponse.json()) as ApiEnvelope<AuthResponse>;
       setAccessToken(result.data.accessToken);
       setUser(result.data.user);
