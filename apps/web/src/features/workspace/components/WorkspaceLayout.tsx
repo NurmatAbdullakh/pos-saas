@@ -32,7 +32,6 @@ export function WorkspaceLayout({ accessToken, user, isSigningOut, onLogout }: W
   const selectedBusinessId = useWorkspaceStore((state) => state.selectedBusinessId);
   const setSelectedBusinessId = useWorkspaceStore((state) => state.setSelectedBusinessId);
   const location = useLocation();
-  const selectedBusiness = businesses.find((business) => business.id === selectedBusinessId);
 
   useEffect(() => {
     if (isLoading) return;
