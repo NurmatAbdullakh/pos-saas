@@ -8,6 +8,8 @@ import { googleAuthSchema } from "./google-auth.schema.js";
 import { googleAuthService } from "./google-auth.service.js";
 import { facebookAuthSchema } from "./facebook-auth.schema.js";
 import { facebookAuthService } from "./facebook-auth.service.js";
+import { appleAuthSchema } from "./apple-auth.schema.js";
+import { appleAuthService } from "./apple-auth.service.js";
 import { idSchema } from "../../shared/schemas.js";
 import { NotFoundError, UnauthorizedError } from "../../shared/errors.js";
 import { usersRepository } from "../users/users.repository.js";
@@ -57,17 +59,20 @@ export const facebookLogin = asyncRequestHandler(async function (req: Request, r
   res.status(200).json(successResponse(response, "Facebook login successfully"));
 });
 
+export const appleLogin = asyncRequestHandler(async function (req: Request, res: Response) {
+  const body = parseOrThrow(req.body, appleAuthSchema);
+  const result = await appleAuthService.login(body);
+  setRefreshCookie(res, result.refreshToken);
+  const { refreshToken: _, ...response } = result;
+  res.status(200).json(successResponse(response, "Apple login successfully"));
+});
+
 export const refresh = asyncRequestHandler(async function (req: Request, res: Response) {
   const rawToken: unknown = req.cookies?.refreshToken;
-  if (typeof rawToken !== "string" || !rawToken) {
-    throw new UnauthorizedError("Refresh token is required");
-  }
+  if (typeof rawToken !== "string" || !rawToken) throw new UnauthorizedError("Refresh token is required");
   const result = await refreshSessionService.refresh(rawToken);
   setRefreshCookie(res, result.refreshToken);
-  res.status(200).json({
-    accessToken: result.accessToken,
-    authProvider: result.authProvider,
-  });
+  res.status(200).json({ accessToken: result.accessToken, authProvider: result.authProvider });
 });
 
 export const logout = asyncRequestHandler(async function (req: Request, res: Response) {
@@ -88,17 +93,14 @@ export const me = asyncRequestHandler(async function (_: Request, res: Response)
   const userId = parseOrThrow(res.locals.userId, idSchema);
   const result = await usersRepository.findUserByProperty("id", userId);
   if (!result) throw new NotFoundError("user not found");
-
   const authProvider =
-    res.locals.authProvider === "google" || res.locals.authProvider === "facebook"
+    res.locals.authProvider === "google" ||
+    res.locals.authProvider === "facebook" ||
+    res.locals.authProvider === "apple"
       ? res.locals.authProvider
       : "password";
-
   res.status(200).json(successResponse({
-    id: result.id,
-    name: result.name,
-    email: result.email,
-    created_at: result.created_at,
-    authProvider,
+    id: result.id, name: result.name, email: result.email,
+    created_at: result.created_at, authProvider,
   }, "user data reached successfully"));
 });
