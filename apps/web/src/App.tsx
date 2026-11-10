@@ -110,32 +110,100 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID) return;
+    console.debug("[Google Auth] effect started", {
+      clientIdConfigured: Boolean(GOOGLE_CLIENT_ID),
+      sdkAvailable: Boolean(window.google?.accounts?.id),
+      buttonRefAvailable: Boolean(googleButtonRef.current),
+    });
+
+    if (!GOOGLE_CLIENT_ID) {
+      console.warn("[Google Auth] VITE_GOOGLE_CLIENT_ID is missing.");
+      return;
+    }
+
     const scriptId = "google-identity-services";
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+
     const initializeGoogle = () => {
-      if (!window.google || !googleButtonRef.current) return;
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: (credential) => void completeSocialLogin("google", { idToken: credential.credential }),
+      console.debug("[Google Auth] initialize callback fired", {
+        sdkAvailable: Boolean(window.google?.accounts?.id),
+        buttonRefAvailable: Boolean(googleButtonRef.current),
+        scriptReadyState: script?.readyState,
       });
-      googleButtonRef.current.innerHTML = "";
-      window.google.accounts.id.renderButton(googleButtonRef.current, {
-        theme: "outline", size: "large", shape: "rectangular", text: "continue_with", width: 320,
-      });
-      setGoogleReady(true);
+      debugger;
+
+      if (!window.google?.accounts?.id) {
+        console.error("[Google Auth] SDK callback fired, but window.google.accounts.id is unavailable.");
+        return;
+      }
+      if (!googleButtonRef.current) {
+        console.error("[Google Auth] SDK is ready, but googleButtonRef.current is null.");
+        return;
+      }
+
+      try {
+        console.debug("[Google Auth] calling google.accounts.id.initialize");
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: (credential) => {
+            console.debug("[Google Auth] credential callback received", {
+              credentialPresent: Boolean(credential.credential),
+            });
+            debugger;
+            if (!credential.credential) {
+              console.error("[Google Auth] Google returned an empty credential.");
+              return;
+            }
+            void completeSocialLogin("google", { idToken: credential.credential });
+          },
+        });
+        console.debug("[Google Auth] initialize completed");
+
+        googleButtonRef.current.innerHTML = "";
+        console.debug("[Google Auth] calling google.accounts.id.renderButton");
+        debugger;
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: "outline", size: "large", shape: "rectangular", text: "continue_with", width: 320,
+        });
+        console.debug("[Google Auth] renderButton completed");
+        setGoogleReady(true);
+      } catch (cause) {
+        console.error("[Google Auth] initialization/rendering failed", cause);
+      }
     };
+
     if (!script) {
+      console.debug("[Google Auth] SDK script not found; creating script element.");
       script = document.createElement("script");
       script.id = scriptId;
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
       script.defer = true;
-      script.onload = initializeGoogle;
+      script.onload = () => {
+        console.debug("[Google Auth] SDK script load event fired.");
+        initializeGoogle();
+      };
+      script.onerror = (event) => {
+        console.error("[Google Auth] SDK script failed to load.", event);
+      };
       document.head.appendChild(script);
-    } else if (window.google) initializeGoogle();
-    else script.addEventListener("load", initializeGoogle);
-    return () => script?.removeEventListener("load", initializeGoogle);
+    } else if (window.google?.accounts?.id) {
+      console.debug("[Google Auth] SDK script already exists and SDK global is available.");
+      initializeGoogle();
+    } else {
+      console.debug("[Google Auth] SDK script exists but SDK global is not available yet; waiting for load event.", {
+        readyState: script.readyState,
+      });
+      script.addEventListener("load", initializeGoogle);
+      script.addEventListener("error", (event) => {
+        console.error("[Google Auth] Existing SDK script emitted an error.", event);
+      }, { once: true });
+    }
+
+    return () => {
+      console.debug("[Google Auth] effect cleanup.");
+      script?.removeEventListener("load", initializeGoogle);
+    };
   }, [completeSocialLogin]);
 
   useEffect(() => {
