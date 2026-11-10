@@ -128,7 +128,6 @@ export default function App() {
       console.debug("[Google Auth] initialize callback fired", {
         sdkAvailable: Boolean(window.google?.accounts?.id),
         buttonRefAvailable: Boolean(googleButtonRef.current),
-        scriptReadyState: script?.readyState,
       });
       debugger;
 
@@ -192,7 +191,6 @@ export default function App() {
       initializeGoogle();
     } else {
       console.debug("[Google Auth] SDK script exists but SDK global is not available yet; waiting for load event.", {
-        readyState: script.readyState,
       });
       script.addEventListener("load", initializeGoogle);
       script.addEventListener("error", (event) => {
