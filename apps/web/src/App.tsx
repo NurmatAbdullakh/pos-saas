@@ -1,4 +1,4 @@
-import { socialProviderConfig } from "./features/auth/types/auth-provider.types";
+import { socialProviderConfig } from "./features/auth/config/auth.config";
 import { LoginPage } from "./features/auth/components/LoginPage";
 import { DashboardPage } from "./features/dashboard/components/DashboardPage";
 import { useAuth } from "./features/auth/hooks/useAuth";
