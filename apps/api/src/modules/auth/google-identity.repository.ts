@@ -1,4 +1,3 @@
-import type { PoolClient } from "pg";
 import { pool } from "../../db/pool.js";
 import { TransactionManager } from "../../db/transaction-manager.js";
 import { ExistsError } from "../../shared/errors.js";
@@ -12,19 +11,21 @@ export interface GoogleUser {
 
 const transactionManager = new TransactionManager(pool);
 
-export const googleIdentityRepository = {
-  async findUserBySubject(providerUserId: string): Promise<GoogleUser | null> {
-    const result = await pool.query<GoogleUser>(
-      `SELECT u.id, u.name, u.email, u.created_at
-       FROM user_identities ui
-       JOIN users u ON u.id = ui.user_id
-       WHERE ui.provider = $1 AND ui.provider_user_id = $2
-       LIMIT 1`,
-      ["google", providerUserId],
-    );
+async function findUserBySubject(providerUserId: string): Promise<GoogleUser | null> {
+  const result = await pool.query<GoogleUser>(
+    `SELECT u.id, u.name, u.email, u.created_at
+     FROM user_identities ui
+     JOIN users u ON u.id = ui.user_id
+     WHERE ui.provider = $1 AND ui.provider_user_id = $2
+     LIMIT 1`,
+    ["google", providerUserId],
+  );
 
-    return result.rows[0] ?? null;
-  },
+  return result.rows[0] ?? null;
+}
+
+export const googleIdentityRepository = {
+  findUserBySubject,
 
   async createUserWithIdentity(input: {
     subject: string;
@@ -32,14 +33,16 @@ export const googleIdentityRepository = {
     name: string;
   }): Promise<GoogleUser> {
     try {
-      return await transactionManager.run(async (client: PoolClient) => {
+      return await transactionManager.run(async (client) => {
         const existingUser = await client.query(
           "SELECT id FROM users WHERE lower(email) = lower($1) LIMIT 1",
           [input.email],
         );
 
         if (existingUser.rowCount) {
-          throw new ExistsError("An account with this email already exists. Sign in with your existing method first.");
+          throw new ExistsError(
+            "An account with this email already exists. Sign in with your existing method first.",
+          );
         }
 
         const userResult = await client.query<GoogleUser>(
@@ -63,8 +66,8 @@ export const googleIdentityRepository = {
     } catch (error) {
       if (error instanceof ExistsError) throw error;
 
-      // A concurrent first sign-in may have created this same Google identity.
-      const existingIdentity = await this.findUserBySubject(input.subject);
+      // Another request may have created this Google identity concurrently.
+      const existingIdentity = await findUserBySubject(input.subject);
       if (existingIdentity) return existingIdentity;
 
       if (
@@ -73,7 +76,9 @@ export const googleIdentityRepository = {
         "code" in error &&
         error.code === "23505"
       ) {
-        throw new ExistsError("An account with this email already exists. Sign in with your existing method first.");
+        throw new ExistsError(
+          "An account with this email already exists. Sign in with your existing method first.",
+        );
       }
 
       throw error;
