@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Building2, ChevronDown, LayoutDashboard, LogOut, Store, Users } from "lucide-react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Brand } from "../../../shared/components/Brand";
 import { Button } from "../../../shared/components/ui/button";
 import { useBusinesses } from "../../businesses/hooks/useBusinesses";
@@ -27,9 +27,10 @@ export function WorkspaceLayout({ accessToken, user, isSigningOut, onLogout }: W
   const currentRole = members.find((member) => member.user_id === user.id)?.role;
   const setSelectedBusinessId = useWorkspaceStore((state) => state.setSelectedBusinessId);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || location.pathname.startsWith("/businesses/")) return;
     if (!businesses.length) {
       if (selectedBusinessId) setSelectedBusinessId(null);
       return;
@@ -37,7 +38,7 @@ export function WorkspaceLayout({ accessToken, user, isSigningOut, onLogout }: W
     if (!businesses.some((business) => business.id === selectedBusinessId)) {
       setSelectedBusinessId(businesses[0].id);
     }
-  }, [businesses, isLoading, selectedBusinessId, setSelectedBusinessId]);
+  }, [businesses, isLoading, location.pathname, selectedBusinessId, setSelectedBusinessId]);
 
   const businessBase = selectedBusinessId ? `/businesses/${selectedBusinessId}` : "/businesses";
   const navigation = [
@@ -88,7 +89,7 @@ export function WorkspaceLayout({ accessToken, user, isSigningOut, onLogout }: W
             <div className="ml-auto flex items-center gap-3">
               <label className="relative flex min-w-0 items-center">
                 <Building2 className="pointer-events-none absolute left-3 size-4 text-slate-400" />
-                <select aria-label="Select business" value={selectedBusinessId ?? ""} onChange={(event) => setSelectedBusinessId(event.target.value || null)} disabled={isLoading || businesses.length === 0} className="h-10 max-w-[190px] appearance-none rounded-xl border border-slate-200 bg-white pl-9 pr-9 text-xs font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 sm:max-w-[240px]">
+                <select aria-label="Select business" value={selectedBusinessId ?? ""} onChange={(event) => { const nextBusinessId = event.target.value || null; setSelectedBusinessId(nextBusinessId); if (location.pathname.startsWith("/businesses/") && nextBusinessId) navigate(`/businesses/${nextBusinessId}`); }} disabled={isLoading || businesses.length === 0} className="h-10 max-w-[190px] appearance-none rounded-xl border border-slate-200 bg-white pl-9 pr-9 text-xs font-semibold text-slate-700 outline-none transition hover:border-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/10 sm:max-w-[240px]">
                   {businesses.length === 0 ? <option value="">No business yet</option> : businesses.map((business) => <option key={business.id} value={business.id}>{business.name}</option>)}
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-3 size-3.5 text-slate-400" />
