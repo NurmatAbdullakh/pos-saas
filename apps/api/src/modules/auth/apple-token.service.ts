@@ -45,7 +45,7 @@ export const appleTokenService = {
   }): Promise<AppleProfile> {
     if (
       !env.APPLE_TEAM_ID || !env.APPLE_CLIENT_ID ||
-      !env.APPLE_KEY_ID || !env.APPLE_PRIVATE_KEY
+      !env.APPLE_KEY_ID || !env.APPLE_PRIVATE_KEY || !env.APPLE_REDIRECT_URI
     ) {
       throw new UnauthorizedError("Apple sign-in is not configured");
     }
@@ -74,12 +74,13 @@ export const appleTokenService = {
         issuer: "https://appleid.apple.com",
         audience: env.APPLE_CLIENT_ID,
         algorithms: ["ES256"],
-        nonce: input.nonce,
+        requiredClaims: ["sub", "email", "email_verified", "nonce"],
       });
 
       if (
         typeof payload.sub !== "string" ||
         typeof payload.email !== "string" ||
+        payload.nonce !== input.nonce ||
         (payload.email_verified !== true && payload.email_verified !== "true")
       ) {
         throw new Error("Apple identity token is missing verified identity claims");
