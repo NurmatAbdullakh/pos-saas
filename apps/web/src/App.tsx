@@ -373,7 +373,10 @@ export default function App() {
         <p className="subtitle">Sign in to continue to your POS workspace.</p>
         <div className="social-buttons">
           {GOOGLE_CLIENT_ID && (
-            <div className="google-button-wrap" ref={googleButtonRef}>
+            <div className="google-button-wrap">
+              {/* Google Identity Services owns the contents of this mount node.
+                  Keep React-rendered placeholder content outside that node. */}
+              <div ref={googleButtonRef} />
               {!googleReady && <div className="google-placeholder">Loading Google sign-in…</div>}
             </div>
           )}
