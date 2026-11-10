@@ -9,9 +9,10 @@ interface MemberFormProps {
   isPending: boolean;
   onSubmit: (values: MembershipFormValues) => Promise<void>;
   onCancel: () => void;
+  error?: string;
 }
 
-export function MemberForm({ isPending, onSubmit, onCancel }: MemberFormProps) {
+export function MemberForm({ isPending, onSubmit, onCancel, error }: MemberFormProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<MembershipFormValues>({
     resolver: zodResolver(membershipSchema),
     defaultValues: { name: "", email: "", password: "", role: "cashier" },
@@ -34,6 +35,7 @@ export function MemberForm({ isPending, onSubmit, onCancel }: MemberFormProps) {
           <option value="manager">Manager — stores, products and team view</option>
         </select>
       </FormField>
+      {error && <p role="alert" className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">{error}</p>}
       <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
         <Button variant="outline" onClick={onCancel}>Cancel</Button>
         <Button type="submit" disabled={isPending}>{isPending ? "Adding…" : "Add team member"}</Button>
