@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LoginPage } from "./features/auth/components/LoginPage";
 import { DashboardPage } from "./features/dashboard/components/DashboardPage";
-import type { AuthUser, LoginCredentials } from "./features/auth/types/auth.types";
+import type { ApiEnvelope, AuthResponse, AuthUser, LoginCredentials } from "./features/auth/types/auth.types";
 import { loginWithPassword as authenticateWithPassword } from "./features/auth/api/auth.api";
 import { getApiErrorMessage } from "./shared/api/getApiErrorMessage";
 
 type User = AuthUser;
-interface ApiEnvelope<T> { success: boolean; message?: string; data: T }
-interface AuthResponse { accessToken: string; user: User }
 interface GoogleCredentialResponse { credential: string }
 interface GoogleIdentity {
   initialize(options: { client_id: string; callback: (response: GoogleCredentialResponse) => void }): void;
