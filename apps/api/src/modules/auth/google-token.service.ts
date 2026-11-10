@@ -8,10 +8,14 @@ export interface GoogleProfile {
   name: string;
 }
 
-const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
+const googleClient = new OAuth2Client();
 
 export const googleTokenService = {
   async verify(idToken: string): Promise<GoogleProfile> {
+    if (!env.GOOGLE_CLIENT_ID) {
+      throw new UnauthorizedError("Google sign-in is not configured");
+    }
+
     try {
       const ticket = await googleClient.verifyIdToken({
         idToken,
