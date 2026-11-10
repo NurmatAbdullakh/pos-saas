@@ -332,7 +332,7 @@ export default function App() {
     return <DashboardPage user={user} isLoading={busy} onLogout={() => void logout()} />;
   }
 
-  const socialContent = (
+  const socialContent = (GOOGLE_CLIENT_ID || FACEBOOK_APP_ID || (APPLE_CLIENT_ID && APPLE_REDIRECT_URI)) ? (
     <>
       {GOOGLE_CLIENT_ID && (
         <div className="google-button-wrap">
