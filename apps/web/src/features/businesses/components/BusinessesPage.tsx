@@ -28,21 +28,29 @@ export function BusinessesPage({ accessToken, userId }: BusinessesPageProps) {
   const isPending = mutations.create.isPending || mutations.update.isPending;
 
   async function save(values: { name: string }) {
-    if (editing) {
-      await mutations.update.mutateAsync({ id: editing.id, input: values });
-    } else {
-      const created = await mutations.create.mutateAsync(values);
-      setSelectedBusinessId(created.id);
+    try {
+      if (editing) {
+        await mutations.update.mutateAsync({ id: editing.id, input: values });
+      } else {
+        const created = await mutations.create.mutateAsync(values);
+        setSelectedBusinessId(created.id);
+      }
+      setFormOpen(false);
+      setEditing(null);
+    } catch {
+      // The mutation error is rendered inside the open dialog.
     }
-    setFormOpen(false);
-    setEditing(null);
   }
 
   async function removeBusiness() {
     if (!deleting) return;
-    await mutations.remove.mutateAsync(deleting.id);
-    if (useWorkspaceStore.getState().selectedBusinessId === deleting.id) setSelectedBusinessId(null);
-    setDeleting(null);
+    try {
+      await mutations.remove.mutateAsync(deleting.id);
+      if (useWorkspaceStore.getState().selectedBusinessId === deleting.id) setSelectedBusinessId(null);
+      setDeleting(null);
+    } catch {
+      // Keep the confirmation dialog open so the user can read the error.
+    }
   }
 
   return (
@@ -99,10 +107,11 @@ export function BusinessesPage({ accessToken, userId }: BusinessesPageProps) {
       )}
 
       <Dialog open={formOpen} onOpenChange={setFormOpen} title={editing ? "Edit business" : "Create a business"} description="Keep your business details clear and recognizable.">
-        <BusinessForm key={editing?.id ?? "new"} initialName={editing?.name} isPending={isPending} onSubmit={save} onCancel={() => setFormOpen(false)} />
+        <BusinessForm key={editing?.id ?? "new"} initialName={editing?.name} isPending={isPending} error={(mutations.create.error || mutations.update.error)?.message} onSubmit={save} onCancel={() => setFormOpen(false)} />
       </Dialog>
 
       <Dialog open={Boolean(deleting)} onOpenChange={(open) => !open && setDeleting(null)} title="Delete business?" description={`This will remove “${deleting?.name ?? ""}” and its workspace relationship. This action cannot be undone.`}>
+        {mutations.remove.error && <p role="alert" className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">{mutations.remove.error.message}</p>}
         <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
           <Button variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
           <Button variant="danger" disabled={mutations.remove.isPending} onClick={() => void removeBusiness()}>{mutations.remove.isPending ? "Deleting…" : "Delete business"}</Button>
