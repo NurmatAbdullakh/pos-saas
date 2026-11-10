@@ -179,13 +179,7 @@ export default function App() {
     const scriptId = "apple-signin-sdk";
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
     const initializeApple = () => {
-      if (!window.AppleID) return;
-      window.AppleID.auth.init({
-        clientId: APPLE_CLIENT_ID, scope: "name email",
-        redirectURI: APPLE_REDIRECT_URI, state: "apple-sdk-init",
-        nonce: "apple-sdk-init-nonce", usePopup: true,
-      });
-      setAppleReady(true);
+      if (window.AppleID) setAppleReady(true);
     };
     if (!script) {
       script = document.createElement("script");
