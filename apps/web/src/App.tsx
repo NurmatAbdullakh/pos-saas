@@ -71,6 +71,7 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const googleButtonRef = useRef<HTMLDivElement>(null);
+  const restoreStarted = useRef(false);
 
   const loadCurrentUser = useCallback(async (token: string) => {
     const response = await fetch("/api/me", {
@@ -111,6 +112,8 @@ export default function App() {
   }, [loadCurrentUser]);
 
   useEffect(() => {
+    if (restoreStarted.current) return;
+    restoreStarted.current = true;
     void restoreSession();
   }, [restoreSession]);
 
