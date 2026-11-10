@@ -32,8 +32,12 @@ export function StoresPage({ accessToken, currentUserId }: { accessToken: string
   }
   async function removeStore() {
     if (!deleting) return;
-    await mutations.remove.mutateAsync(deleting.id);
-    setDeleting(null);
+    try {
+      await mutations.remove.mutateAsync(deleting.id);
+      setDeleting(null);
+    } catch {
+      // Keep the confirmation dialog open so the user can read the error.
+    }
   }
 
   return (
@@ -71,6 +75,7 @@ export function StoresPage({ accessToken, currentUserId }: { accessToken: string
         <StoreForm key={editing?.id ?? "new"} initialName={editing?.name} isPending={mutations.create.isPending || mutations.update.isPending} onSubmit={save} onCancel={() => setFormOpen(false)} />
       </Dialog>
       <Dialog open={Boolean(deleting)} onOpenChange={(open) => !open && setDeleting(null)} title="Delete store?" description={`Delete “${deleting?.name ?? ""}” from this business?`}>
+        {mutations.remove.error && <p role="alert" className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">{mutations.remove.error.message}</p>}
         <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
           <Button variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
           <Button variant="danger" disabled={mutations.remove.isPending} onClick={() => void removeStore()}>{mutations.remove.isPending ? "Deleting…" : "Delete store"}</Button>
