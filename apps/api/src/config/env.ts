@@ -13,7 +13,10 @@ const envSchema = z.object({
   DATABASE_URL: z.string().default(""),
   JWT_SECRET: z.string().default(""),
   JWT_EXPIRES_IN: z.string().default(""),
-  GOOGLE_CLIENT_ID: z.string().min(1, "GOOGLE_CLIENT_ID is required"),
+  GOOGLE_CLIENT_ID: z.string().default(""),
+  FACEBOOK_APP_ID: z.string().default(""),
+  FACEBOOK_APP_SECRET: z.string().default(""),
+  FACEBOOK_GRAPH_API_VERSION: z.string().default("v26.0"),
 });
 
 export const env = envSchema.parse(process.env);
