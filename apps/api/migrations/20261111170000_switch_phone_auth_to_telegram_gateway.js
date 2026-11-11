@@ -9,6 +9,9 @@ export async function up(pgm) {
     where: "gateway_request_id IS NOT NULL",
   });
 
+  // Invalidate pending challenges created by the obsolete bot-based flow.
+  pgm.sql("UPDATE phone_auth_challenges SET consumed_at = NOW() WHERE consumed_at IS NULL");
+
   // These tables belonged only to the obsolete Telegram Bot API contact-link flow.
   pgm.dropTable("telegram_pending_links", { ifExists: true });
   pgm.dropTable("telegram_accounts", { ifExists: true });
