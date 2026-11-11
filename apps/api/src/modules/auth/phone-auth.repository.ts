@@ -16,11 +16,23 @@ export const phoneAuthRepository = {
     return result.rows[0] as { telegram_user_id: string; chat_id: string } | undefined;
   },
 
+  async countRecentChallenges(phoneNumber: string) {
+    const result = await pool.query(
+      "SELECT COUNT(*)::int AS count FROM phone_auth_challenges WHERE phone_number=$1 AND created_at > NOW() - INTERVAL '15 minutes'",
+      [phoneNumber],
+    );
+    return result.rows[0].count as number;
+  },
+
   async createChallenge(input: {
     phoneNumber: string; otpHash: string | null; linkTokenHash: string | null;
     expiresAt: Date; resendAfter: Date | null;
     telegramUserId?: string | null; telegramChatId?: string | null; contactVerified?: boolean;
   }) {
+    await pool.query(
+      "UPDATE phone_auth_challenges SET consumed_at=NOW() WHERE phone_number=$1 AND consumed_at IS NULL",
+      [input.phoneNumber],
+    );
     const result = await pool.query(
       `INSERT INTO phone_auth_challenges
        (phone_number, otp_hash, link_token_hash, expires_at, resend_after,
