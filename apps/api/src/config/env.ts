@@ -12,6 +12,6 @@ const envSchema = z.object({
   FACEBOOK_APP_SECRET:z.string().default(""), FACEBOOK_GRAPH_API_VERSION:z.string().default("v26.0"),
   APPLE_TEAM_ID:z.string().default(""), APPLE_CLIENT_ID:z.string().default(""),
   APPLE_KEY_ID:z.string().default(""), APPLE_PRIVATE_KEY:z.string().default(""), APPLE_REDIRECT_URI:z.string().default(""),
-  TELEGRAM_GATEWAY_TOKEN:z.string().default(""), OTP_SECRET:z.string().default(""),
+  TELEGRAM_GATEWAY_TOKEN:z.string().default(""),
 });
 export const env=envSchema.parse(process.env);
