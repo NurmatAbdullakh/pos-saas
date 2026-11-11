@@ -1,0 +1,43 @@
+name: Deploy POS SaaS
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pos-saas-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy on VPS over SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT || '22' }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH || '/home/user1/pos/pos-saas' }}
+        run: |
+          set -eu
+          test -n "$VPS_HOST" || (echo "Missing VPS_HOST secret" && exit 1)
+          test -n "$VPS_USER" || (echo "Missing VPS_USER secret" && exit 1)
+          test -n "$VPS_SSH_KEY" || (echo "Missing VPS_SSH_KEY secret" && exit 1)
+
+          install -m 700 -d ~/.ssh
+          printf '%s\\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts
+
+          ssh -i ~/.ssh/deploy_key -p "$VPS_PORT" \\
+            -o IdentitiesOnly=yes \\
+            "$VPS_USER@$VPS_HOST" \\
+            "set -eu; cd '$DEPLOY_PATH'; git pull --ff-only origin main; docker compose --env-file .env.production -f compose.production.yml up -d --build; docker compose --env-file .env.production -f compose.production.yml ps"

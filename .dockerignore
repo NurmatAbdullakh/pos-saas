@@ -1,0 +1,22 @@
+# Git
+.git
+.github
+
+# Dependencies and build output
+**/node_modules
+**/dist
+**/coverage
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# Local certificates must never enter production images
+**/certs
+
+# OS/editor files
+.DS_Store
+.idea
+.vscode
