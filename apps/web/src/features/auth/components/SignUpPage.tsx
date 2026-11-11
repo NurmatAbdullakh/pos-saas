@@ -20,7 +20,7 @@ export function SignUpPage({ isLoading, error, onSubmit, onSignIn }: SignUpPageP
     event.preventDefault();
     setValidationError("");
 
-    if (password !== confirmPassword) {
+    if (name.trim().length < 2) {\n      setValidationError("Name must contain at least 2 characters.");\n      return;\n    }\n    if (password !== confirmPassword) {
       setValidationError("Passwords do not match.");
       return;
     }
@@ -45,7 +45,7 @@ export function SignUpPage({ isLoading, error, onSubmit, onSignIn }: SignUpPageP
           <p className="subtitle">Start managing your business with POS SaaS.</p>
         </div>
 
-        <form className="login-form" onSubmit={(event) => void handleSubmit(event)} noValidate>
+        <form className="login-form" onSubmit={(event) => void handleSubmit(event)}>
           <div className="form-field">
             <label htmlFor="signup-name">Full name</label>
             <input
