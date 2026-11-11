@@ -406,3 +406,21 @@ h1 {
   .login-card .privacy-note { margin-top: 10px; }
   .screen > .footer { margin-top: 10px; }
 }
+
+
+/* Telegram phone authentication */
+.phone-auth { margin-top: 2px; text-align: left; }
+.phone-auth .divider { margin: 18px 0 12px; }
+.phone-auth-form { display: flex; flex-direction: column; gap: 10px; }
+.phone-auth-form label { color: #465168; font-size: 12px; font-weight: 600; }
+.phone-auth-form input {
+  width: 100%; min-height: 43px; padding: 0 13px; border: 1px solid #dce1ea;
+  border-radius: 9px; outline: none; background: #fff; color: #172033; font: inherit; font-size: 13px;
+}
+.phone-auth-form input:focus { border-color: #7770ef; box-shadow: 0 0 0 3px rgba(79,70,229,.1); }
+.telegram-link {
+  display: block; padding: 12px; border-radius: 9px; background: #eef5ff;
+  color: #1769aa; text-align: center; text-decoration: none; font-size: 12px; font-weight: 700;
+}
+.phone-auth-hint { margin: 0; color: #68738a; font-size: 11px; line-height: 1.5; }
+.phone-back-button { border: 0; background: transparent; color: #5b55d9; font-size: 11px; cursor: pointer; }
