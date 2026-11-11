@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { requestPhoneOtp, verifyPhoneOtp, type PhoneOtpRequest } from "../api/auth.api";
 import type { AuthResponse } from "../types/auth.types";
 
@@ -11,7 +11,7 @@ export function PhoneAuthForm({ onAuthenticated }: Props) {
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
 
-  async function start(event:React.FormEvent<HTMLFormElement>) {
+  async function start(event:FormEvent<HTMLFormElement>) {
     event.preventDefault(); setLoading(true); setError("");
     try { setChallenge(await requestPhoneOtp(phoneNumber.trim())); }
     catch(cause) { setError(cause instanceof Error ? cause.message : "OTP yuborilmadi."); }
