@@ -1,6 +1,7 @@
 
 import express from "express";
 import cookieParser from "cookie-parser";
+import { env } from "./config/env.js";
 // routes
 import productRoutes from "./modules/products/products.routes.js"
 import authRoutes from "./modules/auth/auth.routes.js"
@@ -11,7 +12,7 @@ import { erroHandlerMiddleware } from "./middlewares/errorHandler.middleware.js"
 import { authTokenMiddleware } from "./middlewares/authToken.middleware.js";
 
 const app = express();
-const port = 3000;
+const port = env.PORT;
 
 app.use(express.json());
 app.use(cookieParser());
