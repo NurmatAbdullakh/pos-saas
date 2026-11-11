@@ -8,7 +8,6 @@ In `apps/api/.env`, set:
 
 ```env
 TELEGRAM_GATEWAY_TOKEN=<your-gateway-api-token>
-OTP_SECRET=<a-long-random-secret>
 ```
 
 Keep real values private. Never commit the token.
