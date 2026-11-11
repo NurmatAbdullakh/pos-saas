@@ -30,8 +30,7 @@ export async function loginWithApple(input: {code:string;nonce:string;firstName?
 
 export interface PhoneOtpRequest {
   challengeId: string;
-  status: "otp_sent" | "awaiting_telegram";
-  telegramUrl?: string;
+  status: "otp_sent";
   expiresIn: number;
 }
 export async function requestPhoneOtp(phoneNumber: string): Promise<PhoneOtpRequest> {
