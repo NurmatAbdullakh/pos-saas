@@ -53,7 +53,7 @@ export default function App() {
       </>
     ) : null;
 
-    return <LoginPage isLoading={auth.isLoading} error={auth.error} onSubmit={auth.signInWithPassword} socialContent={socialContent} />;
+    return <LoginPage isLoading={auth.isLoading} error={auth.error} onSubmit={auth.signInWithPassword} onPhoneAuthenticated={auth.setAuthSession} socialContent={socialContent} />;
   }
 
   return (

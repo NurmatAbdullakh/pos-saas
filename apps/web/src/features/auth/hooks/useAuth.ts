@@ -30,6 +30,7 @@ interface UseAuthResult {
   }) => Promise<void>;
   signOut: () => Promise<void>;
   setAuthError: (message: string) => void;
+  setAuthSession: (response: AuthResponse) => void;
 }
 
 export function useAuth(): UseAuthResult {
@@ -113,6 +114,7 @@ export function useAuth(): UseAuthResult {
 
   const clearError = useCallback(() => setError(""), []);
   const setAuthError = useCallback((message: string) => setError(message), []);
+  const setAuthSession = useCallback((response: AuthResponse) => establishSession(response), [establishSession]);
 
   return {
     accessToken,
@@ -127,5 +129,6 @@ export function useAuth(): UseAuthResult {
     signInWithApple,
     signOut,
     setAuthError,
+    setAuthSession,
   };
 }
