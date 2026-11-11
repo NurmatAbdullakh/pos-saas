@@ -7,13 +7,14 @@ interface Props { onAuthenticated: (response: AuthResponse) => void; }
 export function PhoneAuthForm({ onAuthenticated }: Props) {
   const [phoneNumber,setPhoneNumber]=useState("+998");
   const [code,setCode]=useState("");
+  const [telegramConsent,setTelegramConsent]=useState(false);
   const [challenge,setChallenge]=useState<{challengeId:string;expiresIn:number}|null>(null);
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
 
   async function start(event:FormEvent<HTMLFormElement>) {
     event.preventDefault(); setLoading(true); setError("");
-    try { setChallenge(await requestPhoneOtp(phoneNumber.trim())); }
+    try { setChallenge(await requestPhoneOtp(phoneNumber.trim(), telegramConsent)); }
     catch(cause) { setError(cause instanceof Error ? cause.message : "OTP yuborilmadi."); }
     finally { setLoading(false); }
   }
@@ -36,7 +37,11 @@ export function PhoneAuthForm({ onAuthenticated }: Props) {
           <label htmlFor="phone-number">Phone number</label>
           <input id="phone-number" type="tel" autoComplete="tel" placeholder="+998901234567"
             value={phoneNumber} onChange={(event)=>setPhoneNumber(event.target.value)} disabled={loading} required />
-          <button className="login-submit-button" type="submit" disabled={loading}>
+          <label className="phone-auth-consent">
+            <input type="checkbox" checked={telegramConsent} onChange={(event)=>setTelegramConsent(event.target.checked)} disabled={loading} required />
+            I agree to receive a verification code from POS SaaS via Telegram.
+          </label>
+          <button className="login-submit-button" type="submit" disabled={loading || !telegramConsent}>
             {loading ? "Please wait…" : "Continue with Telegram"}
           </button>
         </form>
