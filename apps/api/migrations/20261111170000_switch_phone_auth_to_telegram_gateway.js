@@ -46,8 +46,6 @@ export async function down(pgm) {
     token_hash: { type: "varchar(64)", notNull: true },
     expires_at: { type: "timestamptz", notNull: true },
   });
-  pgm.dropIndex("phone_auth_challenges", "gateway_request_id", {
-    name: "phone_auth_challenges_gateway_request_id_unique",
-  });
+  // Dropping the column also removes its dependent index.
   pgm.dropColumn("phone_auth_challenges", "gateway_request_id");
 }
