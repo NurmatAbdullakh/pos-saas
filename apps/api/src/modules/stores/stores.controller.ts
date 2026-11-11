@@ -20,7 +20,6 @@ export const createStore=asyncRequestHandler(
 export const getAllStore=asyncRequestHandler(
     async function (req:Request, res:Response){
         const business_id = parseOrThrow(req.params.business_id, idSchema)
-        const userId = res.locals.userId
 
         const result = await storesService.getAll(business_id)
 
@@ -32,7 +31,6 @@ export const getStoreById=asyncRequestHandler(
     async function (req:Request, res:Response){
         const storeId=parseOrThrow(req.params.store_id, idSchema)
         const business_id = parseOrThrow(req.params.business_id, idSchema)
-        const userId = res.locals.userId
                 
         const result = await storesService.getById(storeId, business_id)
 
@@ -44,7 +42,6 @@ export const deleteStoreById=asyncRequestHandler(
     async function (req:Request, res:Response){
         const storeId=parseOrThrow(req.params.store_id, idSchema)
         const business_id = parseOrThrow(req.params.business_id, idSchema)
-        const userId = res.locals.userId
         
         const result = await storesService.deleteById(storeId, business_id)
 
@@ -57,7 +54,6 @@ export const updateStoreById=asyncRequestHandler(
         const body=parseOrThrow(req.body, createStoreSchema)
         const storeId=parseOrThrow(req.params.store_id, idSchema)
         const business_id = parseOrThrow(req.params.business_id, idSchema)
-        const userId = res.locals.userId
                 
         const result = await storesService.updateById({name:body.name, id: storeId}, business_id)
 
