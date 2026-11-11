@@ -9,7 +9,12 @@ interface SignUpPageProps {
   onSignIn: () => void;
 }
 
-export function SignUpPage({ isLoading, error, onSubmit, onSignIn }: SignUpPageProps) {
+export function SignUpPage({
+  isLoading,
+  error,
+  onSubmit,
+  onSignIn,
+}: SignUpPageProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,7 +25,11 @@ export function SignUpPage({ isLoading, error, onSubmit, onSignIn }: SignUpPageP
     event.preventDefault();
     setValidationError("");
 
-    if (name.trim().length < 2) {\n      setValidationError("Name must contain at least 2 characters.");\n      return;\n    }\n    if (password !== confirmPassword) {
+    if (name.trim().length < 2) {
+      setValidationError("Name must contain at least 2 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
       setValidationError("Passwords do not match.");
       return;
     }
@@ -34,7 +43,10 @@ export function SignUpPage({ isLoading, error, onSubmit, onSignIn }: SignUpPageP
 
   return (
     <main className="screen">
-      <section className="login-card signup-card" aria-labelledby="signup-title">
+      <section
+        className="login-card signup-card"
+        aria-labelledby="signup-title"
+      >
         <header className="login-header">
           <Brand className="login-brand" />
           <span className="eyebrow">YOUR BUSINESS, IN CONTROL</span>
@@ -42,10 +54,15 @@ export function SignUpPage({ isLoading, error, onSubmit, onSignIn }: SignUpPageP
 
         <div className="login-intro">
           <h1 id="signup-title">Create your account</h1>
-          <p className="subtitle">Start managing your business with POS SaaS.</p>
+          <p className="subtitle">
+            Start managing your business with POS SaaS.
+          </p>
         </div>
 
-        <form className="login-form" onSubmit={(event) => void handleSubmit(event)}>
+        <form
+          className="login-form"
+          onSubmit={(event) => void handleSubmit(event)}
+        >
           <div className="form-field">
             <label htmlFor="signup-name">Full name</label>
             <input
@@ -114,21 +131,33 @@ export function SignUpPage({ isLoading, error, onSubmit, onSignIn }: SignUpPageP
           </div>
 
           {(validationError || error) && (
-            <p className="error-message" role="alert">{validationError || error}</p>
+            <p className="error-message" role="alert">
+              {validationError || error}
+            </p>
           )}
 
-          <button className="login-submit-button" type="submit" disabled={isLoading}>
+          <button
+            className="login-submit-button"
+            type="submit"
+            disabled={isLoading}
+          >
             {isLoading ? "Creating account…" : "Create account"}
           </button>
         </form>
 
         <p className="auth-switch">
           Already have an account?{" "}
-          <button type="button" onClick={onSignIn}>Sign in</button>
+          <button type="button" onClick={onSignIn}>
+            Sign in
+          </button>
         </p>
-        <p className="privacy-note">By creating an account, you agree to use POS SaaS responsibly.</p>
+        <p className="privacy-note">
+          By creating an account, you agree to use POS SaaS responsibly.
+        </p>
       </section>
-      <footer className="footer">POS SaaS <span>·</span> Simple. Secure. Connected.</footer>
+      <footer className="footer">
+        POS SaaS <span>·</span> Simple. Secure. Connected.
+      </footer>
     </main>
   );
 }
