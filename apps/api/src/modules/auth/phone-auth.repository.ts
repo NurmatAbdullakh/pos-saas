@@ -72,6 +72,7 @@ export const phoneAuthRepository = {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
+      await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [input.phoneNumber]);
       const challenge = await client.query(
         `SELECT id FROM phone_auth_challenges
          WHERE id=$1 AND phone_number=$2 AND expires_at > NOW()
