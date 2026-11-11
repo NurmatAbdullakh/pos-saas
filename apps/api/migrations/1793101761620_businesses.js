@@ -1,5 +1,5 @@
 
-exports.up = (pgm) => {
+export const up = (pgm) => {
     pgm.createTable("businesses", {
       id: {
         type: "uuid",
@@ -34,7 +34,7 @@ exports.up = (pgm) => {
     });
   };
   
-  exports.down = (pgm) => {
+  export const down = (pgm) => {
     pgm.dropTable("businesses");
   };
   
