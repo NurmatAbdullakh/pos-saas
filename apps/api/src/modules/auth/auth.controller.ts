@@ -18,14 +18,13 @@ import { env } from "node:process";
 import { refreshTokenRepository } from "./refresh-token.repository.js";
 import { refreshTokenService } from "./refresh-token.service.js";
 import { successResponse } from "../../shared/successResponse.js";
+import { phoneAuthService } from "./phone-auth.service.js";
+import { requestPhoneOtpSchema, verifyPhoneOtpSchema } from "./phone-auth.schema.js";
 
 const setRefreshCookie = (res: Response, refreshToken: string) => {
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/api/auth",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax",
+    path: "/api/auth", maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
 
@@ -67,6 +66,29 @@ export const appleLogin = asyncRequestHandler(async function (req: Request, res:
   res.status(200).json(successResponse(response, "Apple login successfully"));
 });
 
+export const requestPhoneOtp = asyncRequestHandler(async function (req: Request, res: Response) {
+  const body = parseOrThrow(req.body, requestPhoneOtpSchema);
+  const result = await phoneAuthService.requestOtp(body.phoneNumber);
+  res.status(200).json(successResponse(result, "Phone verification started"));
+});
+
+export const verifyPhoneOtp = asyncRequestHandler(async function (req: Request, res: Response) {
+  const body = parseOrThrow(req.body, verifyPhoneOtpSchema);
+  const result = await phoneAuthService.verifyOtp(body);
+  setRefreshCookie(res, result.refreshToken);
+  const { refreshToken: _, ...response } = result;
+  res.status(200).json(successResponse(response, "Phone authentication successful"));
+});
+
+export const telegramWebhook = asyncRequestHandler(async function (req: Request, res: Response) {
+  const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (!secret || req.header("x-telegram-bot-api-secret-token") !== secret) {
+    throw new UnauthorizedError("Invalid Telegram webhook secret");
+  }
+  await phoneAuthService.handleTelegramUpdate(req.body);
+  res.status(200).json({ ok: true });
+});
+
 export const refresh = asyncRequestHandler(async function (req: Request, res: Response) {
   const rawToken: unknown = req.cookies?.refreshToken;
   if (typeof rawToken !== "string" || !rawToken) throw new UnauthorizedError("Refresh token is required");
@@ -81,10 +103,7 @@ export const logout = asyncRequestHandler(async function (req: Request, res: Res
     await refreshTokenRepository.revoke(refreshTokenService.hash(rawToken));
   }
   res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/api/auth",
+    httpOnly: true, secure: env.NODE_ENV === "production", sameSite: "lax", path: "/api/auth",
   });
   res.status(200).json(successResponse({}, "logged out"));
 });
@@ -94,11 +113,8 @@ export const me = asyncRequestHandler(async function (_: Request, res: Response)
   const result = await usersRepository.findUserByProperty("id", userId);
   if (!result) throw new NotFoundError("user not found");
   const authProvider =
-    res.locals.authProvider === "google" ||
-    res.locals.authProvider === "facebook" ||
-    res.locals.authProvider === "apple"
-      ? res.locals.authProvider
-      : "password";
+    res.locals.authProvider === "google" || res.locals.authProvider === "facebook" ||
+    res.locals.authProvider === "apple" ? res.locals.authProvider : "password";
   res.status(200).json(successResponse({
     id: result.id, name: result.name, email: result.email,
     created_at: result.created_at, authProvider,
