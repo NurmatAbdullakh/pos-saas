@@ -424,3 +424,38 @@ h1 {
 }
 .phone-auth-hint { margin: 0; color: #68738a; font-size: 11px; line-height: 1.5; }
 .phone-back-button { border: 0; background: transparent; color: #5b55d9; font-size: 11px; cursor: pointer; }
+
+
+/* Email / phone sign-in tabs */
+.login-method-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 18px;
+  border: 1px solid #e9edf4;
+  border-radius: 11px;
+  background: #f5f6fa;
+}
+.login-method-tab {
+  min-height: 38px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #737d91;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color .15s ease, background .15s ease, box-shadow .15s ease;
+}
+.login-method-tab:hover { color: #4338ca; }
+.login-method-tab.is-active {
+  background: #fff;
+  color: #4338ca;
+  box-shadow: 0 1px 4px rgba(27, 39, 69, .10);
+}
+.login-method-tab:focus-visible {
+  outline: 2px solid #7770ef;
+  outline-offset: 2px;
+}
