@@ -7,10 +7,11 @@ interface LoginPageProps {
   isLoading: boolean;
   error: string;
   onSubmit: (credentials: LoginCredentials) => Promise<void>;
+  onSignUp: () => void;
   socialContent?: ReactNode;
 }
 
-export function LoginPage({ isLoading, error, onSubmit, socialContent }: LoginPageProps) {
+export function LoginPage({ isLoading, error, onSubmit, onSignUp, socialContent }: LoginPageProps) {
   return (
     <main className="screen">
       <section className="login-card" aria-labelledby="login-title">
@@ -33,6 +34,10 @@ export function LoginPage({ isLoading, error, onSubmit, socialContent }: LoginPa
           </>
         )}
 
+        <p className="auth-switch">
+          New to POS SaaS?{" "}
+          <button type="button" onClick={onSignUp}>Create an account</button>
+        </p>
         <p className="privacy-note">
           Secure sign-in. Your social account password is never stored.
         </p>
