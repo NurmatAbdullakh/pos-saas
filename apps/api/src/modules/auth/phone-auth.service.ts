@@ -38,12 +38,13 @@ export const phoneAuthService = {
     const contact=message.contact;
     if(!contact?.phone_number || !contact?.user_id || Number(contact.user_id)!==Number(message.from.id)) return;
     const phoneNumber=normalizePhone(contact.phone_number);
-    const pending=await phoneAuthRepository.takePendingLink(Number(message.from.id));
+    const pending=await phoneAuthRepository.getPendingLink(Number(message.from.id));
     if(!pending) return;
     const challengeId=await phoneAuthRepository.bindTelegramContact({
       tokenHash:pending.token_hash,phoneNumber,telegramUserId:Number(message.from.id),chatId:Number(message.chat.id),
     });
     if(!challengeId) return;
+    await phoneAuthRepository.deletePendingLink(Number(message.from.id));
     const otp=telegramService.generateOtp();
     await phoneAuthRepository.setOtp(challengeId,telegramService.hash(otp),
       new Date(Date.now()+OTP_TTL_MS),new Date(Date.now()+RESEND_COOLDOWN_MS));
