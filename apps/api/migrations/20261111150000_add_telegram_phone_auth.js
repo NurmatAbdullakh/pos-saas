@@ -1,9 +1,5 @@
-export const shorthands = undefined;
-
 export async function up(pgm) {
-  pgm.addColumn("users", {
-    phone_number: { type: "varchar(16)", notNull: false },
-  });
+  pgm.addColumn("users", { phone_number: { type: "varchar(16)" } });
   pgm.addConstraint("users", "users_phone_number_unique", { unique: ["phone_number"] });
   pgm.alterColumn("users", "email", { notNull: false });
   pgm.alterColumn("users", "password_hash", { notNull: false });
@@ -17,6 +13,13 @@ export async function up(pgm) {
     created_at: { type: "timestamptz", notNull: true, default: pgm.func("now()") },
   });
   pgm.addConstraint("telegram_accounts", "telegram_accounts_user_id_unique", { unique: ["user_id"] });
+
+  pgm.createTable("telegram_pending_links", {
+    telegram_user_id: { type: "bigint", primaryKey: true },
+    chat_id: { type: "bigint", notNull: true },
+    token_hash: { type: "varchar(64)", notNull: true },
+    expires_at: { type: "timestamptz", notNull: true },
+  });
 
   pgm.createTable("phone_auth_challenges", {
     id: { type: "uuid", primaryKey: true, default: pgm.func("gen_random_uuid()") },
@@ -38,6 +41,7 @@ export async function up(pgm) {
 
 export async function down(pgm) {
   pgm.dropTable("phone_auth_challenges");
+  pgm.dropTable("telegram_pending_links");
   pgm.dropTable("telegram_accounts");
   pgm.dropConstraint("users", "users_phone_number_unique");
   pgm.dropColumn("users", "phone_number");
