@@ -32,6 +32,7 @@ export const phoneAuthService = {
     const challenge = await phoneAuthRepository.findChallenge(input.challengeId);
     if (
       !challenge ||
+      !challenge.gateway_request_id ||
       challenge.phone_number !== input.phoneNumber ||
       challenge.attempts >= 5 ||
       challenge.expires_at.getTime() <= Date.now() ||
