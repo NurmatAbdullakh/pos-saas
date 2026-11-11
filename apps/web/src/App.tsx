@@ -18,6 +18,7 @@ export default function App() {
   const [authView, setAuthView] = useState<"login" | "signup">("login");
   const social = useSocialAuth({
     isEnabled: auth.status === "signed-out",
+    googleRenderTarget: authView,
     onGoogleCredential: auth.signInWithGoogle,
     onFacebookCredential: auth.signInWithFacebook,
     onAppleCredential: auth.signInWithApple,
@@ -62,6 +63,7 @@ export default function App() {
           isLoading={auth.isLoading}
           error={auth.error}
           onSubmit={auth.signUp}
+          socialContent={socialContent}
           onSignIn={() => { auth.clearError(); setAuthView("login"); }}
         />
       );

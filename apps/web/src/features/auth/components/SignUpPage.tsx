@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import type { RegisterCredentials } from "../types/auth.types";
 import { Brand } from "../../../shared/components/Brand";
 
@@ -7,6 +7,7 @@ interface SignUpPageProps {
   error: string;
   onSubmit: (credentials: RegisterCredentials) => Promise<void>;
   onSignIn: () => void;
+  socialContent?: ReactNode;
 }
 
 export function SignUpPage({
@@ -14,6 +15,7 @@ export function SignUpPage({
   error,
   onSubmit,
   onSignIn,
+  socialContent,
 }: SignUpPageProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -144,6 +146,15 @@ export function SignUpPage({
             {isLoading ? "Creating account…" : "Create account"}
           </button>
         </form>
+
+        {socialContent && (
+          <>
+            <div className="divider">
+              <span>OR SIGN UP WITH</span>
+            </div>
+            <div className="social-buttons">{socialContent}</div>
+          </>
+        )}
 
         <p className="auth-switch">
           Already have an account?{" "}
