@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import type { RegisterCredentials } from "../types/auth.types";
 import { Brand } from "../../../shared/components/Brand";
 
@@ -7,9 +7,16 @@ interface SignUpPageProps {
   error: string;
   onSubmit: (credentials: RegisterCredentials) => Promise<void>;
   onSignIn: () => void;
+  socialContent?: ReactNode;
 }
 
-export function SignUpPage({ isLoading, error, onSubmit, onSignIn }: SignUpPageProps) {
+export function SignUpPage({
+  isLoading,
+  error,
+  onSubmit,
+  onSignIn,
+  socialContent,
+}: SignUpPageProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,7 +27,11 @@ export function SignUpPage({ isLoading, error, onSubmit, onSignIn }: SignUpPageP
     event.preventDefault();
     setValidationError("");
 
-    if (name.trim().length < 2) {\n      setValidationError("Name must contain at least 2 characters.");\n      return;\n    }\n    if (password !== confirmPassword) {
+    if (name.trim().length < 2) {
+      setValidationError("Name must contain at least 2 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
       setValidationError("Passwords do not match.");
       return;
     }
@@ -121,6 +132,13 @@ export function SignUpPage({ isLoading, error, onSubmit, onSignIn }: SignUpPageP
             {isLoading ? "Creating account…" : "Create account"}
           </button>
         </form>
+
+        {socialContent && (
+          <>
+            <div className="divider"><span>OR SIGN UP WITH</span></div>
+            <div className="social-buttons">{socialContent}</div>
+          </>
+        )}
 
         <p className="auth-switch">
           Already have an account?{" "}
