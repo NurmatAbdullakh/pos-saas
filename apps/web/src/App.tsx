@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { socialProviderConfig } from "./features/auth/config/auth.config";
 import { LoginPage } from "./features/auth/components/LoginPage";
+import { SignUpPage } from "./features/auth/components/SignUpPage";
 import { useAuth } from "./features/auth/hooks/useAuth";
 import { useSocialAuth } from "./features/auth/hooks/useSocialAuth";
 import { WorkspaceLayout } from "./features/workspace/components/WorkspaceLayout";
@@ -13,8 +15,10 @@ import { MembershipsPage } from "./features/memberships/components/MembershipsPa
 
 export default function App() {
   const auth = useAuth();
+  const [authView, setAuthView] = useState<"login" | "signup">("login");
   const social = useSocialAuth({
     isEnabled: auth.status === "signed-out",
+    googleRenderTarget: authView,
     onGoogleCredential: auth.signInWithGoogle,
     onFacebookCredential: auth.signInWithFacebook,
     onAppleCredential: auth.signInWithApple,
@@ -53,7 +57,27 @@ export default function App() {
       </>
     ) : null;
 
-    return <LoginPage isLoading={auth.isLoading} error={auth.error} onSubmit={auth.signInWithPassword} socialContent={socialContent} />;
+    if (authView === "signup") {
+      return (
+        <SignUpPage
+          isLoading={auth.isLoading}
+          error={auth.error}
+          onSubmit={auth.signUp}
+          socialContent={socialContent}
+          onSignIn={() => { auth.clearError(); setAuthView("login"); }}
+        />
+      );
+    }
+
+    return (
+      <LoginPage
+        isLoading={auth.isLoading}
+        error={auth.error}
+        onSubmit={auth.signInWithPassword}
+        socialContent={socialContent}
+        onSignUp={() => { auth.clearError(); setAuthView("signup"); }}
+      />
+    );
   }
 
   return (

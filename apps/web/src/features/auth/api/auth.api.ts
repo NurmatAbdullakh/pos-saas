@@ -3,6 +3,7 @@ import type {
   AuthResponse,
   AuthUser,
   LoginCredentials,
+  RegisterCredentials,
 } from "../types/auth.types";
 import { getApiErrorMessage } from "../../../shared/api/getApiErrorMessage";
 
@@ -19,6 +20,10 @@ async function post<T>(path: string, body?: unknown, accessToken?: string): Prom
 
   if (!response.ok) throw new Error(await getApiErrorMessage(response));
   return (await response.json()) as T;
+}
+
+export async function registerAccount(credentials: RegisterCredentials): Promise<void> {
+  await post<ApiEnvelope<unknown>>("/api/auth/register", credentials);
 }
 
 export async function loginWithPassword(credentials: LoginCredentials): Promise<AuthResponse> {

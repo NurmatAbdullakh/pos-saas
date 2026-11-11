@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { AuthResponse, AuthUser, LoginCredentials } from "../types/auth.types";
+import type { AuthResponse, AuthUser, LoginCredentials, RegisterCredentials } from "../types/auth.types";
 import {
   getCurrentUser,
   loginWithApple,
   loginWithFacebook,
   loginWithGoogle,
   loginWithPassword,
+  registerAccount,
   logout as logoutRequest,
   refreshSession,
 } from "../api/auth.api";
@@ -20,6 +21,7 @@ interface UseAuthResult {
   error: string;
   clearError: () => void;
   signInWithPassword: (credentials: LoginCredentials) => Promise<void>;
+  signUp: (credentials: RegisterCredentials) => Promise<void>;
   signInWithGoogle: (idToken: string) => Promise<void>;
   signInWithFacebook: (token: string) => Promise<void>;
   signInWithApple: (input: {
@@ -62,6 +64,23 @@ export function useAuth(): UseAuthResult {
     (credentials: LoginCredentials) => runAuthentication(() => loginWithPassword(credentials)),
     [runAuthentication],
   );
+
+  const signUp = useCallback(async (credentials: RegisterCredentials) => {
+    setIsLoading(true);
+    setError("");
+    try {
+      await registerAccount(credentials);
+      const response = await loginWithPassword({
+        email: credentials.email,
+        password: credentials.password,
+      });
+      establishSession(response);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to create your account.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [establishSession]);
 
   const signInWithGoogle = useCallback(
     (idToken: string) => runAuthentication(() => loginWithGoogle(idToken)),
@@ -122,6 +141,7 @@ export function useAuth(): UseAuthResult {
     error,
     clearError,
     signInWithPassword,
+    signUp,
     signInWithGoogle,
     signInWithFacebook,
     signInWithApple,

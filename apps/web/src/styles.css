@@ -406,3 +406,24 @@ h1 {
   .login-card .privacy-note { margin-top: 10px; }
   .screen > .footer { margin-top: 10px; }
 }
+
+/* Sign-up and authentication navigation */
+.auth-switch {
+  margin: 18px 0 0;
+  color: #7b8498;
+  font-size: 12px;
+}
+.auth-switch button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #4f46e5;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.auth-switch button:hover { color: #4338ca; text-decoration: underline; }
+.signup-card .login-intro { margin-bottom: 18px; }
+.signup-card .login-form { gap: 11px; }
+.signup-card .form-field input { min-height: 41px; }
+.signup-card .privacy-note { margin-top: 12px; }
