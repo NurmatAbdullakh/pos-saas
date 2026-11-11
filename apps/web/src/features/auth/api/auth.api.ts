@@ -1,9 +1,4 @@
-import type {
-  ApiEnvelope,
-  AuthResponse,
-  AuthUser,
-  LoginCredentials,
-} from "../types/auth.types";
+import type { ApiEnvelope, AuthResponse, AuthUser, LoginCredentials } from "../types/auth.types";
 import { getApiErrorMessage } from "../../../shared/api/getApiErrorMessage";
 
 async function post<T>(path: string, body?: unknown, accessToken?: string): Promise<T> {
@@ -16,51 +11,45 @@ async function post<T>(path: string, body?: unknown, accessToken?: string): Prom
     credentials: "include",
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
-
   if (!response.ok) throw new Error(await getApiErrorMessage(response));
   return (await response.json()) as T;
 }
 
 export async function loginWithPassword(credentials: LoginCredentials): Promise<AuthResponse> {
-  const result = await post<ApiEnvelope<AuthResponse>>("/api/auth/login", credentials);
-  return result.data;
+  return (await post<ApiEnvelope<AuthResponse>>("/api/auth/login", credentials)).data;
 }
-
 export async function loginWithGoogle(idToken: string): Promise<AuthResponse> {
-  const result = await post<ApiEnvelope<AuthResponse>>("/api/auth/google", { idToken });
-  return result.data;
+  return (await post<ApiEnvelope<AuthResponse>>("/api/auth/google", { idToken })).data;
 }
-
 export async function loginWithFacebook(accessToken: string): Promise<AuthResponse> {
-  const result = await post<ApiEnvelope<AuthResponse>>("/api/auth/facebook", { accessToken });
-  return result.data;
+  return (await post<ApiEnvelope<AuthResponse>>("/api/auth/facebook", { accessToken })).data;
+}
+export async function loginWithApple(input: {code:string;nonce:string;firstName?:string;lastName?:string}): Promise<AuthResponse> {
+  return (await post<ApiEnvelope<AuthResponse>>("/api/auth/apple", input)).data;
 }
 
-export async function loginWithApple(input: {
-  code: string;
-  nonce: string;
-  firstName?: string;
-  lastName?: string;
-}): Promise<AuthResponse> {
-  const result = await post<ApiEnvelope<AuthResponse>>("/api/auth/apple", input);
-  return result.data;
+export interface PhoneOtpRequest {
+  challengeId: string;
+  status: "otp_sent" | "awaiting_telegram";
+  telegramUrl?: string;
+  expiresIn: number;
+}
+export async function requestPhoneOtp(phoneNumber: string): Promise<PhoneOtpRequest> {
+  return (await post<ApiEnvelope<PhoneOtpRequest>>("/api/auth/phone/request-otp", { phoneNumber })).data;
+}
+export async function verifyPhoneOtp(input: {challengeId:string;phoneNumber:string;code:string}): Promise<AuthResponse> {
+  return (await post<ApiEnvelope<AuthResponse>>("/api/auth/phone/verify-otp", input)).data;
 }
 
 export async function refreshSession(): Promise<string> {
   const result = await post<{ accessToken: string }>("/api/auth/refresh");
   return result.accessToken;
 }
-
 export async function getCurrentUser(accessToken: string): Promise<AuthUser> {
-  const response = await fetch("/api/me", {
-    headers: { Authorization: `Bearer ${accessToken}` },
-    credentials: "include",
-  });
+  const response = await fetch("/api/me", { headers: { Authorization: `Bearer ${accessToken}` }, credentials: "include" });
   if (!response.ok) throw new Error(await getApiErrorMessage(response));
-  const result = (await response.json()) as ApiEnvelope<AuthUser>;
-  return result.data;
+  return ((await response.json()) as ApiEnvelope<AuthUser>).data;
 }
-
 export async function logout(accessToken: string | null): Promise<void> {
   await post<unknown>("/api/auth/logout", undefined, accessToken ?? undefined);
 }
