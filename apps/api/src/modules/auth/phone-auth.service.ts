@@ -1,4 +1,4 @@
-import { UnauthorizedError } from "../../shared/errors.js";
+import { TooManyRequestsError, UnauthorizedError } from "../../shared/errors.js";
 import { phoneAuthRepository } from "./phone-auth.repository.js";
 import { refreshTokenService } from "./refresh-token.service.js";
 import { tokenService } from "./token.service.js";
@@ -8,6 +8,9 @@ const OTP_TTL_MS=5*60*1000, RESEND_COOLDOWN_MS=60*1000, REFRESH_TTL_MS=7*24*60*6
 
 export const phoneAuthService = {
   async requestOtp(phoneNumber: string) {
+    if (await phoneAuthRepository.countRecentChallenges(phoneNumber) >= 5) {
+      throw new TooManyRequestsError("Too many OTP requests. Try again in 15 minutes.");
+    }
     const linked=await phoneAuthRepository.findTelegramAccount(phoneNumber);
     const otp=linked ? telegramService.generateOtp() : null;
     const linkToken=linked ? null : telegramService.generateLinkToken();
