@@ -31,7 +31,6 @@ export function PhoneAuthForm({ onAuthenticated }: Props) {
 
   return (
     <section className="phone-auth">
-      <div className="divider"><span>OR CONTINUE WITH PHONE</span></div>
       {!challenge ? (
         <form className="phone-auth-form" onSubmit={(event)=>void start(event)}>
           <label htmlFor="phone-number">Phone number</label>
