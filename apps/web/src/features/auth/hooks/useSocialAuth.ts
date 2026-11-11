@@ -3,6 +3,7 @@ import { socialProviderConfig } from "../config/auth.config";
 
 interface UseSocialAuthOptions {
   isEnabled: boolean;
+  googleRenderTarget: string;
   onGoogleCredential: (idToken: string) => Promise<void>;
   onFacebookCredential: (accessToken: string) => Promise<void>;
   onAppleCredential: (input: {
@@ -16,6 +17,7 @@ interface UseSocialAuthOptions {
 
 export function useSocialAuth({
   isEnabled,
+  googleRenderTarget,
   onGoogleCredential,
   onFacebookCredential,
   onAppleCredential,
@@ -79,7 +81,7 @@ export function useSocialAuth({
       cancelled = true;
       script?.removeEventListener("load", initialize);
     };
-  }, [isEnabled, onError, onGoogleCredential]);
+  }, [isEnabled, googleRenderTarget, onError, onGoogleCredential]);
 
   useEffect(() => {
     const appId = socialProviderConfig.facebookAppId;
