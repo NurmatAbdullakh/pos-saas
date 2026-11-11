@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { requestPhoneOtp, verifyPhoneOtp, type PhoneOtpRequest } from "../api/auth.api";
+import { requestPhoneOtp, verifyPhoneOtp } from "../api/auth.api";
 import type { AuthResponse } from "../types/auth.types";
 
 interface Props { onAuthenticated: (response: AuthResponse) => void; }
@@ -7,7 +7,7 @@ interface Props { onAuthenticated: (response: AuthResponse) => void; }
 export function PhoneAuthForm({ onAuthenticated }: Props) {
   const [phoneNumber,setPhoneNumber]=useState("+998");
   const [code,setCode]=useState("");
-  const [challenge,setChallenge]=useState<PhoneOtpRequest|null>(null);
+  const [challenge,setChallenge]=useState<{challengeId:string;expiresIn:number}|null>(null);
   const [loading,setLoading]=useState(false);
   const [error,setError]=useState("");
 
@@ -18,7 +18,7 @@ export function PhoneAuthForm({ onAuthenticated }: Props) {
     finally { setLoading(false); }
   }
 
-  async function verify(event:React.FormEvent<HTMLFormElement>) {
+  async function verify(event:FormEvent<HTMLFormElement>) {
     event.preventDefault(); if(!challenge) return;
     setLoading(true); setError("");
     try {
@@ -42,21 +42,15 @@ export function PhoneAuthForm({ onAuthenticated }: Props) {
         </form>
       ) : (
         <form className="phone-auth-form" onSubmit={(event)=>void verify(event)}>
-          {challenge.telegramUrl && (
-            <a className="telegram-link" href={challenge.telegramUrl} target="_blank" rel="noreferrer">
-              Open Telegram bot and share your contact
-            </a>
-          )}
           <p className="phone-auth-hint">
-            {challenge.status==="awaiting_telegram"
-              ? "Botda Start tugmasini bosing va o'zingizning telefon kontaktingizni ulashing. OTP Telegram orqali yuboriladi."
-              : "Tasdiqlash kodi Telegram chatiga yuborildi."}
+            Tasdiqlash kodi Telegram ilovasidagi Verification Codes chatiga yuborildi.
+            Kod {Math.floor(challenge.expiresIn / 60)} daqiqa amal qiladi.
           </p>
-          <label htmlFor="phone-otp">6-digit verification code</label>
-          <input id="phone-otp" inputMode="numeric" autoComplete="one-time-code" maxLength={6}
+          <label htmlFor="phone-otp">Verification code</label>
+          <input id="phone-otp" inputMode="numeric" autoComplete="one-time-code" maxLength={8}
             placeholder="000000" value={code} onChange={(event)=>setCode(event.target.value.replace(/\D/g,""))}
             disabled={loading} required />
-          <button className="login-submit-button" type="submit" disabled={loading || code.length!==6}>
+          <button className="login-submit-button" type="submit" disabled={loading || code.length<4 || code.length>8}>
             {loading ? "Verifying…" : "Verify and sign in"}
           </button>
           <button className="phone-back-button" type="button" onClick={()=>{setChallenge(null);setCode("");setError("");}}>
