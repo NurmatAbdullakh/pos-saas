@@ -4,6 +4,9 @@ const phoneNumberSchema = z.string().trim().regex(/^\+[1-9]\d{7,14}$/, "Telefon 
 
 export const requestPhoneOtpSchema = z.object({
   phoneNumber: phoneNumberSchema,
+  telegramConsent: z.literal(true, {
+    error: "Telegram orqali tasdiqlash kodini olishga rozilik berishingiz kerak",
+  }),
 });
 
 export const verifyPhoneOtpSchema = z.object({
