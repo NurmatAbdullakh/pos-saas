@@ -80,15 +80,6 @@ export const verifyPhoneOtp = asyncRequestHandler(async function (req: Request, 
   res.status(200).json(successResponse(response, "Phone authentication successful"));
 });
 
-export const telegramWebhook = asyncRequestHandler(async function (req: Request, res: Response) {
-  const secret = process.env.TELEGRAM_WEBHOOK_SECRET;
-  if (!secret || req.header("x-telegram-bot-api-secret-token") !== secret) {
-    throw new UnauthorizedError("Invalid Telegram webhook secret");
-  }
-  await phoneAuthService.handleTelegramUpdate(req.body);
-  res.status(200).json({ ok: true });
-});
-
 export const refresh = asyncRequestHandler(async function (req: Request, res: Response) {
   const rawToken: unknown = req.cookies?.refreshToken;
   if (typeof rawToken !== "string" || !rawToken) throw new UnauthorizedError("Refresh token is required");
