@@ -33,7 +33,7 @@ export interface PhoneOtpRequest {
   status: "otp_sent";
   expiresIn: number;
 }
-export async function requestPhoneOtp(phoneNumber: string, telegramConsent: true): Promise<PhoneOtpRequest> {
+export async function requestPhoneOtp(phoneNumber: string, telegramConsent: boolean): Promise<PhoneOtpRequest> {
   return (await post<ApiEnvelope<PhoneOtpRequest>>("/api/auth/phone/request-otp", { phoneNumber, telegramConsent })).data;
 }
 export async function verifyPhoneOtp(input: {challengeId:string;phoneNumber:string;code:string}): Promise<AuthResponse> {
