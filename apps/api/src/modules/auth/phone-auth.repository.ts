@@ -43,12 +43,16 @@ export const phoneAuthRepository = {
     );
   },
 
-  async takePendingLink(userId: number) {
+  async getPendingLink(userId: number) {
     const result = await pool.query(
-      `DELETE FROM telegram_pending_links WHERE telegram_user_id=$1 AND expires_at > NOW()
-       RETURNING chat_id, token_hash`, [userId],
+      `SELECT chat_id, token_hash FROM telegram_pending_links
+       WHERE telegram_user_id=$1 AND expires_at > NOW()`, [userId],
     );
     return result.rows[0] as { chat_id: string; token_hash: string } | undefined;
+  },
+
+  async deletePendingLink(userId: number) {
+    await pool.query(`DELETE FROM telegram_pending_links WHERE telegram_user_id=$1`, [userId]);
   },
 
   async bindTelegramContact(input: {
